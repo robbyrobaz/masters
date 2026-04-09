@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adeptia Masters Pool 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0a1628; color: #e0e7ef; min-height: 100vh; }
+
+  .header { background: linear-gradient(135deg, #006747 0%, #004d35 100%); padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3); flex-wrap: wrap; gap: 10px; }
+  .header h1 { font-size: 22px; color: #fff; }
+  .header h1 span { color: #f4d03f; }
+  .header .meta { text-align: right; font-size: 13px; color: #a0d8b8; }
+  .header .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #e74c3c; animation: pulse 1.5s infinite; margin-right: 6px; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+
+  .card { background: #131f35; border-radius: 12px; padding: 18px; border: 1px solid #1e3050; }
+  .card h2 { font-size: 14px; color: #8899aa; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+  .standings-table { width: 100%; border-collapse: collapse; }
+  .standings-table th { text-align: left; padding: 6px 8px; font-size: 10px; color: #667788; text-transform: uppercase; border-bottom: 1px solid #1e3050; }
+  .standings-table td { padding: 5px 8px; font-size: 13px; border-bottom: 1px solid #0e1a2e; }
+  .standings-table tr:hover { background: #1a2a45; }
+  .standings-table tr.rob { background: #1a3525 !important; border-left: 3px solid #2ecc71; }
+  .standings-table tr.rob td { color: #fff; font-weight: 600; }
+  .standings-table tr.top3 td:first-child { color: #f4d03f; font-weight: 700; }
+
+  .rank-1 { color: #f4d03f !important; font-size: 15px; }
+  .rank-2 { color: #c0c0c0 !important; }
+  .rank-3 { color: #cd7f32 !important; }
+  .score { font-family: 'SF Mono','Consolas',monospace; font-weight: 600; text-align: right; }
+  .cut { color: #e74c3c; font-size: 10px; font-weight: 700; }
+  .under { color: #2ecc71; }
+  .over { color: #e67e22; }
+  .even { color: #f4d03f; }
+
+  .rob-detail { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  @media (max-width: 900px) { .rob-detail { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 500px) { .rob-detail { grid-template-columns: repeat(2, 1fr); } }
+  .player-card { background: #0e1a2e; border-radius: 8px; padding: 12px; border: 1px solid #1e3050; text-align: center; }
+  .player-card .tier { font-size: 10px; color: #667788; text-transform: uppercase; }
+  .player-card .name { font-size: 13px; font-weight: 600; margin: 3px 0; }
+  .player-card .score-big { font-size: 32px; font-weight: 700; font-family: 'SF Mono',monospace; }
+  .player-card .details { font-size: 11px; color: #8899aa; margin-top: 3px; }
+  .player-card.good { border-color: #1a5535; }
+  .player-card.good .score-big { color: #2ecc71; }
+  .player-card.bad .score-big { color: #e74c3c; }
+  .player-card.neutral .score-big { color: #f4d03f; }
+
+  .sim-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 600; }
+  .sim-badge.win { background: #1a3525; color: #2ecc71; }
+
+  .rob-rank-banner { background: linear-gradient(135deg, #1a3525, #0e2a1a); border: 2px solid #2ecc71; border-radius: 12px; padding: 16px 24px; margin-top: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .rob-rank-banner .big-rank { font-size: 48px; font-weight: 800; color: #2ecc71; font-family: 'SF Mono',monospace; }
+  .rob-rank-banner .label { font-size: 14px; color: #a0d8b8; }
+  .rob-rank-banner .total { font-size: 28px; font-weight: 700; font-family: 'SF Mono',monospace; color: #fff; }
+
+  .refresh-note { text-align: center; margin-top: 16px; font-size: 11px; color: #445566; }
+  .loading { text-align: center; padding: 40px; color: #556677; font-size: 16px; }
+  .error-msg { background: #3d1515; border: 1px solid #6b2020; border-radius: 8px; padding: 12px; text-align: center; color: #e74c3c; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span>⛳</span> Adeptia Masters Pool 2026</h1>
+  <div class="meta">
+    <div><span class="live-dot"></span> <span id="live-status">Connecting...</span></div>
+    <div id="last-update" style="margin-top:4px;"></div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="rob-banner" class="rob-rank-banner" style="display:none;">
+    <div><div class="label">Rob's Current Rank</div><div class="big-rank" id="rob-rank-num">#1</div></div>
+    <div><div class="label">Total Strokes</div><div class="total" id="rob-total">—</div></div>
+    <div><div class="label">Pre-Tourney Win Probability</div><div class="total" style="color:#2ecc71" id="rob-winpct">13.0%</div></div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h2>Rob's Lineup</h2>
+    <div class="rob-detail" id="rob-players"><div class="loading">Loading live scores...</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Pool Standings (27 entries)</h2>
+      <div id="standings-container"><div class="loading">Loading...</div></div>
+    </div>
+    <div class="card">
+      <h2>Opponent Danger Watch</h2>
+      <div id="danger-container"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
+
+  <div class="refresh-note">Auto-refreshes every 60 seconds | Scores via ESPN API</div>
+</div>
+
+<script>
+const POOL = [
+  { name: 'Allie Chu', picks: ['Scottie Scheffler','Patrick Reed','Adam Scott','Corey Conners','Gary Woodland','Zach Johnson'] },
+  { name: 'Aman Jain', picks: ['Jon Rahm','Hideki Matsuyama','Jake Knapp','Nicolai Hojgaard','Gary Woodland','Ryan Gerard'] },
+  { name: 'Arun Kumar', picks: ['Rory McIlroy','Justin Rose','Justin Thomas','Sam Burns','Daniel Berger','Ryan Gerard'] },
+  { name: 'Caitlan Morris', picks: ['Rory McIlroy','Justin Rose','Justin Thomas','J.J. Spaun','Ben Griffin','Andrew Novak'] },
+  { name: 'Carlos Escabalzeta', picks: ['Rory McIlroy','Jordan Spieth','Jason Day','Maverick McNealy','Keegan Bradley','Dustin Johnson'] },
+  { name: 'Charles Nardi', picks: ['Bryson DeChambeau','Brooks Koepka','Justin Thomas','Jacob Bridgeman','Gary Woodland','Michael Kim'] },
+  { name: 'Chris Monterio', picks: ['Scottie Scheffler','Hideki Matsuyama','Sepp Straka','J.J. Spaun','Sungjae Im','Brian Harman'] },
+  { name: 'Dan Kerns', picks: ['Ludvig Aberg','Jordan Spieth','Akshay Bhatia','Nicolai Hojgaard','Sungjae Im','Brian Harman'] },
+  { name: 'Finn Garrity', picks: ['Scottie Scheffler','Hideki Matsuyama','Jake Knapp','Sam Burns','Sungjae Im','Brian Harman'] },
+  { name: 'Gaurav Sachdev', picks: ['Scottie Scheffler','Hideki Matsuyama','Sepp Straka','Sam Burns','Ben Griffin','Ryan Gerard'] },
+  { name: 'Geoff Mueller', picks: ['Scottie Scheffler','Brooks Koepka','Patrick Cantlay','Cameron Smith','Sungjae Im','Wyndham Clark'] },
+  { name: 'James Thompson', picks: ['Ludvig Aberg','Hideki Matsuyama','Patrick Cantlay','Sam Burns','Gary Woodland','Ryan Gerard'] },
+  { name: 'Jim Wisch', picks: ['Scottie Scheffler','Justin Rose','Adam Scott','Sam Burns','Ben Griffin','Ryan Gerard'] },
+  { name: 'John Briggs', picks: ['Tommy Fleetwood','Viktor Hovland','Min Woo Lee','Sam Burns','Gary Woodland','Brian Harman'] },
+  { name: 'Justin Bissonette', picks: ['Bryson DeChambeau','Hideki Matsuyama','Akshay Bhatia','Corey Conners','Gary Woodland','Wyndham Clark'] },
+  { name: 'Krishna Kumar', picks: ['Xander Schauffele','Hideki Matsuyama','Min Woo Lee','Corey Conners','Sungjae Im','Ryan Fox'] },
+  { name: 'Madison Barett', picks: ['Rory McIlroy','Hideki Matsuyama','Akshay Bhatia','Nicolai Hojgaard','Rasmus Hojgaard','Ryan Gerard'] },
+  { name: 'Mani Nandu', picks: ['Scottie Scheffler','Hideki Matsuyama','Justin Thomas','Corey Conners','Sungjae Im','Ryan Gerard'] },
+  { name: 'Michael Bevilacqua', picks: ['Rory McIlroy','Justin Rose','Jake Knapp','Maverick McNealy','Marco Penge','Nicolas Echavarria'] },
+  { name: 'NKacey Moreira', picks: ['Scottie Scheffler','Chris Gotterup','Min Woo Lee','Corey Conners','Ben Griffin','Ryan Fox'] },
+  { name: 'Paul Moriarity', picks: ['Rory McIlroy','Jordan Spieth','Adam Scott','J.J. Spaun','Ben Griffin','Aaron Rai'] },
+  { name: 'Rachel Sperry', picks: ['Scottie Scheffler','Patrick Reed','Jake Knapp','Jacob Bridgeman','Sungjae Im','Ryan Gerard'] },
+  { name: 'Richard Echeandia', picks: ['Rory McIlroy','Robert MacIntyre','Patrick Cantlay','J.J. Spaun','Ben Griffin','Nick Taylor'] },
+  { name: 'Rob Hartwig', picks: ['Matt Fitzpatrick','Patrick Reed','Adam Scott','Corey Conners','Daniel Berger','Ryan Gerard'] },
+  { name: 'Sandeep Naredla', picks: ['Scottie Scheffler','Hideki Matsuyama','Akshay Bhatia','J.J. Spaun','Ben Griffin','Brian Harman'] },
+  { name: 'Scott Lear', picks: ['Scottie Scheffler','Patrick Reed','Akshay Bhatia','Jacob Bridgeman','Sungjae Im','Michael Kim'] },
+  { name: 'Tim Bond', picks: ['Bryson DeChambeau','Patrick Reed','Adam Scott','Corey Conners','Sungjae Im','Aaron Rai'] },
+];
+
+const MC_PENALTY = 82;
+const SIM_DATA = {
+  'Rob Hartwig': { winPct: 13.0, top3Pct: 33.6 },
+  'Mani Nandu': { winPct: 11.1, top3Pct: 28.0 },
+  'Aman Jain': { winPct: 7.0, top3Pct: 18.2 },
+  'Krishna Kumar': { winPct: 6.4, top3Pct: 18.6 },
+  'Tim Bond': { winPct: 5.7, top3Pct: 17.9 },
+  'Madison Barett': { winPct: 4.9, top3Pct: 14.7 },
+  'Rachel Sperry': { winPct: 4.7, top3Pct: 13.0 },
+  'Chris Monterio': { winPct: 4.4, top3Pct: 13.4 },
+  'Dan Kerns': { winPct: 4.2, top3Pct: 12.2 },
+  'Allie Chu': { winPct: 3.0, top3Pct: 10.5 },
+  'Charles Nardi': { winPct: 0.3, top3Pct: 1.2 },
+};
+
+const DANGER_PICKS = {
+  'Brooks Koepka': '2 straight Augusta MCs (46% MC rate)',
+  'Wyndham Clark': '2 straight Augusta MCs (68% MC rate)',
+  'Jacob Bridgeman': 'Masters debut (40% MC rate)',
+  'Michael Kim': '350/1 longshot (60% MC rate)',
+  'Dustin Johnson': '2 straight MCs + declining (69% MC rate)',
+  'Keegan Bradley': 'Poor Augusta history (55% MC rate)',
+  'Sam Burns': 'Lost SG:Approach at Augusta 2 straight yrs',
+  'Zach Johnson': '600/1, age 50 (70% MC rate)',
+  'Andrew Novak': '400/1 longshot (60% MC rate)',
+  'Marco Penge': 'Augusta debut, 160/1 (55% MC rate)',
+  'Nicolas Echavarria': '310/1 longshot (65% MC rate)',
+  'Brian Harman': 'MC at last Masters (55% MC rate)',
+};
+
+let playerScores = {};
+
+async function fetchScores() {
+  try {
+    // Try the Vercel API route first, fall back to direct ESPN
+    let url = '/api/scores';
+    let res = await fetch(url).catch(() => null);
+    if (!res || !res.ok) {
+      url = 'https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard';
+      res = await fetch(url);
+    }
+    const data = await res.json();
+
+    const competitors = data.competitors || [];
+    // If we got raw ESPN data, parse it
+    if (!data.competitors && data.events) {
+      const event = data.events[0];
+      for (const comp of event?.competitions?.[0]?.competitors || []) {
+        const name = comp.athlete?.displayName || '';
+        const roundScores = (comp.linescores || []).map(ls => parseInt(ls.value) || 0);
+        const toPar = comp.statistics?.find(s => s.name === 'scoreToPar')?.displayValue || '';
+        const position = comp.status?.position?.displayName || '';
+        const thru = comp.status?.thru?.toString() || '';
+        const isCut = comp.status?.type?.description === 'cut' || comp.status?.type?.id === '3';
+        competitors.push({ name, roundScores, toPar, thru, position, isCut });
+      }
+      data.eventName = event?.name;
+    }
+
+    playerScores = {};
+    for (const c of competitors) {
+      let total = c.roundScores?.reduce((s, r) => s + r, 0) || 0;
+      if (c.isCut) {
+        const played = c.roundScores?.filter(r => r > 0).length || 0;
+        total += (4 - played) * MC_PENALTY;
+      }
+      playerScores[c.name] = { total, toPar: c.toPar, thru: c.thru, position: c.position, isCut: c.isCut, rounds: c.roundScores || [] };
+    }
+
+    document.getElementById('live-status').textContent = 'LIVE — ' + (data.eventName || 'Masters 2026');
+    document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    return true;
+  } catch (err) {
+    document.getElementById('live-status').textContent = 'Retrying... (' + err.message + ')';
+    return false;
+  }
+}
+
+function findPlayer(name) {
+  if (playerScores[name]) return playerScores[name];
+  const last = name.split(' ').pop();
+  for (const [k, v] of Object.entries(playerScores)) {
+    if (k.includes(last)) return v;
+  }
+  return null;
+}
+
+function toParClass(toPar) {
+  if (!toPar || toPar === '?') return 'even';
+  if (toPar.startsWith('-')) return 'under';
+  if (toPar.startsWith('+')) return 'over';
+  if (toPar === 'E') return 'even';
+  return 'even';
+}
+
+function calcStandings() {
+  const standings = POOL.map(entry => {
+    let total = 0;
+    const players = entry.picks.map((pick, i) => {
+      const score = findPlayer(pick);
+      if (score) {
+        total += score.total;
+        return { name: pick, tier: i+1, ...score };
+      }
+      return { name: pick, tier: i+1, total: 0, toPar: '?', thru: '', isCut: false, rounds: [] };
+    });
+    return { name: entry.name, total, players, isRob: entry.name === 'Rob Hartwig' };
+  });
+  standings.sort((a, b) => a.total - b.total);
+  return standings;
+}
+
+function render() {
+  const standings = calcStandings();
+  const rob = standings.find(s => s.isRob);
+  const robRank = standings.indexOf(rob) + 1;
+
+  // Rob banner
+  const banner = document.getElementById('rob-banner');
+  banner.style.display = 'flex';
+  document.getElementById('rob-rank-num').textContent = '#' + robRank;
+  document.getElementById('rob-total').textContent = rob.total || '—';
+
+  // Rob's players
+  const robEl = document.getElementById('rob-players');
+  robEl.innerHTML = rob.players.map(p => {
+    const cls = p.isCut ? 'bad' : toParClass(p.toPar) === 'under' ? 'good' : toParClass(p.toPar) === 'over' ? 'bad' : 'neutral';
+    const thru = p.thru ? 'Thru ' + p.thru : '';
+    const rounds = p.rounds?.filter(r => r > 0).join(' - ') || '';
+    return `<div class="player-card ${cls}">
+      <div class="tier">Tier ${p.tier}</div>
+      <div class="name">${p.name}${p.isCut ? ' <span class="cut">MC</span>' : ''}</div>
+      <div class="score-big">${p.toPar || '—'}</div>
+      <div class="details">${[p.position, thru, rounds].filter(Boolean).join(' | ')}</div>
+    </div>`;
+  }).join('');
+
+  // Standings table
+  const stEl = document.getElementById('standings-container');
+  let html = `<table class="standings-table"><thead><tr>
+    <th>#</th><th>Name</th><th>T1</th><th>T2</th><th>T3</th><th>T4</th><th>T5</th><th>T6</th><th style="text-align:right">Strokes</th><th>Sim</th>
+  </tr></thead><tbody>`;
+
+  standings.forEach((s, i) => {
+    const rank = i + 1;
+    const cls = s.isRob ? 'rob' : rank <= 3 ? 'top3' : '';
+    const rankCls = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+    const sim = SIM_DATA[s.name];
+    const simHtml = sim ? `<span class="sim-badge win">${sim.winPct}%</span>` : '';
+
+    const cells = s.players.map(p => {
+      const last = p.name.split(' ').pop();
+      const cls = toParClass(p.toPar);
+      const cutMark = p.isCut ? '<br><span class="cut">MC</span>' : '';
+      return `<td style="font-size:11px" title="${p.name}"><span class="${cls}">${last}</span><br><span style="font-family:monospace;font-size:10px" class="${cls}">${p.toPar || '—'}</span>${cutMark}</td>`;
+    }).join('');
+
+    html += `<tr class="${cls}">
+      <td class="${rankCls}" style="font-weight:700;text-align:center">${rank}</td>
+      <td>${s.name}${s.isRob ? ' ⛳' : ''}</td>
+      ${cells}
+      <td class="score">${s.total || '—'}</td>
+      <td>${simHtml}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  stEl.innerHTML = html;
+
+  // Danger watch
+  const dangerEl = document.getElementById('danger-container');
+  const dangers = [];
+  for (const s of standings) {
+    if (s.isRob) continue;
+    for (const p of s.players) {
+      if (DANGER_PICKS[p.name]) {
+        dangers.push({ owner: s.name, player: p.name, tier: p.tier, toPar: p.toPar, isCut: p.isCut, reason: DANGER_PICKS[p.name] });
+      }
+    }
+  }
+  if (dangers.length === 0) {
+    dangerEl.innerHTML = '<p style="color:#667788;padding:20px;text-align:center">No danger picks tracked yet</p>';
+  } else {
+    let dhtml = '<table class="standings-table"><thead><tr><th>Owner</th><th>Danger Pick</th><th>Score</th><th>Risk</th></tr></thead><tbody>';
+    for (const d of dangers) {
+      const color = d.isCut ? '#e74c3c' : d.toPar?.startsWith('+') ? '#e67e22' : '#8899aa';
+      dhtml += `<tr>
+        <td style="font-size:12px">${d.owner}</td>
+        <td style="color:${color};font-size:12px">${d.player}${d.isCut ? ' <span class="cut">MC</span>' : ''}</td>
+        <td style="font-family:monospace;font-size:12px">${d.toPar || '—'}</td>
+        <td style="font-size:11px;color:#e67e22">${d.reason}</td>
+      </tr>`;
+    }
+    dhtml += '</tbody></table>';
+    dangerEl.innerHTML = dhtml;
+  }
+}
+
+async function refresh() {
+  await fetchScores();
+  render();
+}
+
+refresh();
+setInterval(refresh, 60000);
+</script>
+</body>
+</html>
