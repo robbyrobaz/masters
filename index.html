@@ -471,17 +471,19 @@ async function fetchScores() {
       const playedRounds = rounds.filter(r => r > 0);
       let total = rounds.reduce((s, r) => s + r, 0) || 0;
       if (c.isCut) { total += (4 - playedRounds.length) * MC_PENALTY; }
-      // Use ESPN toPar if available; only calculate if round looks complete (>=60 strokes)
+      // Use ESPN toPar if available; otherwise calculate from strokes
       let toPar = c.toPar;
-      if ((!toPar || toPar === '') && playedRounds.length > 0) {
-        const completedRounds = playedRounds.filter(r => r >= 60);
-        if (completedRounds.length > 0) {
-          const parTotal = completedRounds.length * 72;
-          const completedTotal = completedRounds.reduce((s, r) => s + r, 0);
-          const diff = completedTotal - parTotal;
+      if ((!toPar || toPar === '') && total > 0) {
+        // If thru=F or thru=18, player finished — calculate from completed rounds
+        // Otherwise just show the raw total as a reference
+        const isFinished = c.thru === 'F' || c.thru === '18';
+        if (isFinished && playedRounds.length > 0) {
+          const parTotal = playedRounds.length * 72;
+          const diff = total - parTotal;
           toPar = diff === 0 ? 'E' : diff > 0 ? '+' + diff : '' + diff;
-        } else {
-          toPar = '...';  // mid-round, can't calculate to-par reliably
+        } else if (playedRounds.length > 0) {
+          // Mid-round: show stroke total instead of bad to-par calc
+          toPar = total.toString();
         }
       }
       // Calculate position from thru field or infer
