@@ -896,7 +896,17 @@ function renderStats(standings) {
 }
 
 // ── Podium History Tracker + Radar Animation ──
-const podiumHistory = JSON.parse(localStorage.getItem('masters-podium-history') || '[]');
+// Clear old history that had score-only changes (v2: only track position swaps)
+const rawHistory = JSON.parse(localStorage.getItem('masters-podium-history') || '[]');
+// Dedupe: keep only entries where the names differ from previous
+const podiumHistory = [];
+for (const snap of rawHistory) {
+  const prev = podiumHistory[podiumHistory.length - 1];
+  if (!prev || !prev.top3.every((p, i) => p.name === snap.top3[i]?.name)) {
+    podiumHistory.push(snap);
+  }
+}
+localStorage.setItem('masters-podium-history', JSON.stringify(podiumHistory));
 const MAX_HISTORY = 60;
 let radarIdx = -1; // -1 = live
 let radarTimer = null;
@@ -907,10 +917,16 @@ function trackPodium(standings) {
   const top3 = standings.slice(0, 3).map(s => ({ name: s.name, total: s.total }));
   const last = podiumHistory[podiumHistory.length - 1];
 
-  // Only record if podium order or scores changed
+  // Only record if the podium NAMES changed (someone swapped position)
   if (last) {
-    const same = last.top3.every((p, i) => p.name === top3[i]?.name && p.total === top3[i]?.total);
-    if (same) return;
+    const sameOrder = last.top3.every((p, i) => p.name === top3[i]?.name);
+    if (sameOrder) {
+      // Update scores on the latest snapshot silently (keeps live totals current)
+      last.top3 = top3;
+      last.time = Date.now();
+      localStorage.setItem('masters-podium-history', JSON.stringify(podiumHistory));
+      return;
+    }
   }
 
   podiumHistory.push({ time: Date.now(), top3 });
