@@ -578,10 +578,25 @@ async function fetchScores() {
   }
 }
 
+// ESPN uses special characters for some names
+const NAME_MAP = {
+  'Ludvig Aberg': 'Ludvig Åberg',
+  'Nicolai Hojgaard': 'Nicolai Højgaard',
+  'Rasmus Hojgaard': 'Rasmus Højgaard',
+  'Nicolas Echavarria': 'Nico Echavarria',
+};
+
 function findPlayer(name) {
   if (playerScores[name]) return playerScores[name];
-  const last = name.split(' ').pop();
-  for (const [k, v] of Object.entries(playerScores)) { if (k.includes(last)) return v; }
+  // Try mapped name
+  const mapped = NAME_MAP[name];
+  if (mapped && playerScores[mapped]) return playerScores[mapped];
+  // Fuzzy: last name match (strip accents for comparison)
+  const last = name.split(' ').pop().toLowerCase();
+  const strip = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  for (const [k, v] of Object.entries(playerScores)) {
+    if (k.includes(last) || strip(k).includes(last)) return v;
+  }
   return null;
 }
 
