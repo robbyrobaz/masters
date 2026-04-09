@@ -102,6 +102,17 @@
   .refresh-note { text-align: center; margin-top: 24px; font-size: 13px; color: #334455; padding-bottom: 24px; }
   .loading { text-align: center; padding: 40px; color: #556677; font-size: 18px; }
 
+  /* Top Stats Row */
+  .top-row { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 16px; margin: 20px 0; align-items: start; }
+  @media (max-width: 1100px) { .top-row { grid-template-columns: 1fr; } .podium { order: -1; } }
+  .side-stats { display: flex; flex-direction: column; gap: 10px; }
+  .mini-stat { background: #0e1a2e; border-radius: 10px; padding: 14px 18px; border: 1px solid #1e3050; }
+  .mini-stat .mini-label { font-size: 11px; color: #667788; text-transform: uppercase; letter-spacing: 0.5px; }
+  .mini-stat .mini-value { font-size: 22px; font-weight: 700; font-family: 'SF Mono',monospace; margin-top: 4px; }
+  .mini-stat .mini-detail { font-size: 12px; color: #8899aa; margin-top: 3px; }
+  .progress-bar { height: 8px; background: #1e3050; border-radius: 4px; overflow: hidden; margin-top: 6px; }
+  .progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #006747, #2ecc71); transition: width 0.5s; }
+
   /* Tabs */
   .tab-nav { display: flex; gap: 0; margin-top: 20px; border-bottom: 2px solid #1e3050; }
   .tab-btn { padding: 14px 28px; font-size: 16px; font-weight: 600; color: #667788; background: none; border: none; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
@@ -155,24 +166,63 @@
   </div>
 
   <div id="tab-live" class="tab-content active">
-  <div class="podium" id="podium">
-    <div class="podium-spot second">
-      <div class="podium-label">Currently 2nd — $100</div>
-      <div class="podium-name" id="p2-name">—</div>
-      <div class="podium-score" id="p2-score">—</div>
-      <div class="podium-gap" id="p2-gap"></div>
+  <div class="top-row">
+    <div class="side-stats" id="left-stats">
+      <div class="mini-stat">
+        <div class="mini-label">Tournament Progress</div>
+        <div class="mini-value" id="stat-progress">—</div>
+        <div class="progress-bar"><div class="progress-fill" id="stat-progress-bar" style="width:0%"></div></div>
+        <div class="mini-detail" id="stat-round">—</div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-label">Pool Players Reporting</div>
+        <div class="mini-value" id="stat-reporting">—</div>
+        <div class="mini-detail" id="stat-reporting-detail">—</div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-label">Best Golfer in Pool</div>
+        <div class="mini-value under" id="stat-best-golfer">—</div>
+        <div class="mini-detail" id="stat-best-detail">—</div>
+      </div>
     </div>
-    <div class="podium-spot first">
-      <div class="podium-label">Current Leader — $200</div>
-      <div class="podium-name" id="p1-name">—</div>
-      <div class="podium-score" id="p1-score">—</div>
-      <div class="podium-gap" id="p1-gap">Leader</div>
+
+    <div class="podium" id="podium">
+      <div class="podium-spot second">
+        <div class="podium-label">Currently 2nd — $100</div>
+        <div class="podium-name" id="p2-name">—</div>
+        <div class="podium-score" id="p2-score">—</div>
+        <div class="podium-gap" id="p2-gap"></div>
+      </div>
+      <div class="podium-spot first">
+        <div class="podium-label">Current Leader — $200</div>
+        <div class="podium-name" id="p1-name">—</div>
+        <div class="podium-score" id="p1-score">—</div>
+        <div class="podium-gap" id="p1-gap">Leader</div>
+      </div>
+      <div class="podium-spot third">
+        <div class="podium-label">Currently 3rd — $50</div>
+        <div class="podium-name" id="p3-name">—</div>
+        <div class="podium-score" id="p3-score">—</div>
+        <div class="podium-gap" id="p3-gap"></div>
+      </div>
     </div>
-    <div class="podium-spot third">
-      <div class="podium-label">Currently 3rd — $50</div>
-      <div class="podium-name" id="p3-name">—</div>
-      <div class="podium-score" id="p3-score">—</div>
-      <div class="podium-gap" id="p3-gap"></div>
+
+    <div class="side-stats" id="right-stats">
+      <div class="mini-stat">
+        <div class="mini-label">Worst Golfer in Pool</div>
+        <div class="mini-value over" id="stat-worst-golfer">—</div>
+        <div class="mini-detail" id="stat-worst-detail">—</div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-label">Missed Cuts</div>
+        <div class="mini-value" id="stat-mc-count" style="color:#e74c3c">—</div>
+        <div class="mini-detail" id="stat-mc-detail">Check back after Round 2</div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-label">Closest Race</div>
+        <div class="mini-value" id="stat-closest" style="color:#f4d03f">—</div>
+        <div class="mini-detail" id="stat-closest-detail">—</div>
+      </div>
     </div>
   </div>
 
@@ -603,11 +653,104 @@ function render() {
   html += '</tbody></table>';
   stEl.innerHTML = html;
 
+  // Top stats
+  renderTopStats(standings);
+
   // Monte Carlo probabilities
   renderProbabilities(standings);
 
   // Analytics
   renderStats(standings);
+}
+
+function renderTopStats(standings) {
+  // Tournament progress: count how many pool golfers have scores
+  const allPoolGolfers = new Set();
+  const reportingGolfers = new Set();
+  const finishedGolfers = new Set();
+  const golferScores = [];
+
+  for (const entry of POOL) {
+    for (const pick of entry.picks) {
+      allPoolGolfers.add(pick);
+      const score = findPlayer(pick);
+      if (score && score.total > 0) {
+        reportingGolfers.add(pick);
+        if (score.thru === 'F' || score.thru === '18') finishedGolfers.add(pick);
+        golferScores.push({ name: pick, ...score });
+      }
+    }
+  }
+
+  // Dedupe golfer scores
+  const uniqueGolfers = {};
+  for (const g of golferScores) { if (!uniqueGolfers[g.name]) uniqueGolfers[g.name] = g; }
+  const sortedGolfers = Object.values(uniqueGolfers).sort((a, b) => a.total - b.total);
+
+  // Determine current round
+  const maxRounds = Math.max(...Object.values(playerScores).map(p => p.rounds?.filter(r => r > 0).length || 0), 0);
+  const roundLabel = maxRounds <= 1 ? 'Round 1' : maxRounds === 2 ? 'Round 2' : maxRounds === 3 ? 'Round 3' : 'Round 4';
+
+  // Progress: each golfer plays 4 rounds of 18 holes = 72 holes total
+  // Rough estimate based on rounds completed + current thru
+  const totalPoolHoles = allPoolGolfers.size * 72; // 4 rounds * 18 holes
+  let completedHoles = 0;
+  for (const name of allPoolGolfers) {
+    const score = findPlayer(name);
+    if (!score || score.total === 0) continue;
+    const roundsComplete = score.rounds?.filter(r => r > 0).length || 0;
+    // Each completed round = 18 holes; if thru=F means current round done
+    if (score.thru === 'F' || score.thru === '18') {
+      completedHoles += roundsComplete * 18;
+    } else {
+      const thruNum = parseInt(score.thru) || 0;
+      completedHoles += Math.max(0, roundsComplete - 1) * 18 + thruNum;
+    }
+  }
+  const progressPct = totalPoolHoles > 0 ? Math.round(completedHoles / totalPoolHoles * 100) : 0;
+
+  document.getElementById('stat-progress').textContent = progressPct + '%';
+  document.getElementById('stat-progress-bar').style.width = progressPct + '%';
+  document.getElementById('stat-round').textContent = roundLabel + ' | ' + completedHoles + ' of ' + totalPoolHoles + ' holes';
+
+  document.getElementById('stat-reporting').textContent = reportingGolfers.size + ' / ' + allPoolGolfers.size;
+  document.getElementById('stat-reporting-detail').textContent = finishedGolfers.size + ' finished ' + roundLabel.toLowerCase();
+
+  // Best golfer
+  if (sortedGolfers.length > 0) {
+    const best = sortedGolfers[0];
+    const bestOwners = POOL.filter(e => e.picks.includes(best.name)).map(e => e.name.split(' ')[0]);
+    document.getElementById('stat-best-golfer').textContent = best.name.split(' ').pop() + ' ' + (best.toPar || best.total);
+    document.getElementById('stat-best-detail').textContent = 'Picked by: ' + bestOwners.join(', ');
+  }
+
+  // Worst golfer
+  if (sortedGolfers.length > 1) {
+    const worst = sortedGolfers[sortedGolfers.length - 1];
+    const worstOwners = POOL.filter(e => e.picks.includes(worst.name)).map(e => e.name.split(' ')[0]);
+    document.getElementById('stat-worst-golfer').textContent = worst.name.split(' ').pop() + ' ' + (worst.toPar || worst.total);
+    document.getElementById('stat-worst-detail').textContent = 'Picked by: ' + worstOwners.join(', ');
+  }
+
+  // Missed cuts
+  const mcCount = Object.values(playerScores).filter(p => p.isCut).length;
+  document.getElementById('stat-mc-count').textContent = mcCount > 0 ? mcCount + ' players' : 'None yet';
+  if (mcCount > 0) {
+    const mcNames = Object.entries(playerScores).filter(([,p]) => p.isCut).map(([n]) => n.split(' ').pop());
+    document.getElementById('stat-mc-detail').textContent = mcNames.join(', ');
+  }
+
+  // Closest race: smallest gap between adjacent standings
+  let closestGap = Infinity, closestNames = '';
+  for (let i = 0; i < Math.min(standings.length - 1, 10); i++) {
+    const gap = standings[i + 1].total - standings[i].total;
+    if (gap >= 0 && gap < closestGap && standings[i].total > 0) {
+      closestGap = gap;
+      closestNames = standings[i].name.split(' ')[0] + ' vs ' + standings[i + 1].name.split(' ')[0];
+    }
+  }
+  document.getElementById('stat-closest').textContent = closestGap === 0 ? 'TIED!' : closestGap < Infinity ? closestGap + ' strokes' : '—';
+  document.getElementById('stat-closest-detail').textContent = closestNames || 'Top 10 gap';
 }
 
 function renderProbabilities(standings) {
