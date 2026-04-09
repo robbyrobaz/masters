@@ -271,9 +271,20 @@ async function fetchScores() {
     }
     playerScores = {};
     for (const c of competitors) {
-      let total = c.roundScores?.reduce((s, r) => s + r, 0) || 0;
-      if (c.isCut) { const played = c.roundScores?.filter(r => r > 0).length || 0; total += (4 - played) * MC_PENALTY; }
-      playerScores[c.name] = { total, toPar: c.toPar, thru: c.thru, position: c.position, isCut: c.isCut, rounds: c.roundScores || [] };
+      const rounds = c.roundScores || [];
+      const playedRounds = rounds.filter(r => r > 0);
+      let total = rounds.reduce((s, r) => s + r, 0) || 0;
+      if (c.isCut) { total += (4 - playedRounds.length) * MC_PENALTY; }
+      // Calculate to-par if ESPN didn't provide it (par 72 per round)
+      let toPar = c.toPar;
+      if ((!toPar || toPar === '') && playedRounds.length > 0) {
+        const parTotal = playedRounds.length * 72;
+        const diff = total - parTotal;
+        toPar = diff === 0 ? 'E' : diff > 0 ? '+' + diff : '' + diff;
+      }
+      // Calculate position from thru field or infer
+      const thru = c.thru || (playedRounds.length > 0 ? 'F' : '');
+      playerScores[c.name] = { total, toPar, thru, position: c.position, isCut: c.isCut, rounds };
     }
     document.getElementById('live-status').textContent = 'LIVE — ' + (data.eventName || 'Masters 2026');
     document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
