@@ -8,7 +8,9 @@ async function getHistory() {
   try {
     const { blobs } = await list({ prefix: BLOB_KEY });
     if (blobs.length === 0) return [];
-    const res = await fetch(blobs[0].url);
+    // Add cache-buster to avoid CDN returning stale data
+    const url = blobs[0].url + '?t=' + Date.now();
+    const res = await fetch(url, { cache: 'no-store' });
     return await res.json();
   } catch {
     return [];
