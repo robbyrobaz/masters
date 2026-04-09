@@ -684,9 +684,8 @@ function render() {
   html += '</tbody></table>';
   stEl.innerHTML = html;
 
-  // Track podium changes
-  trackPodium(standings);
-  if (!radarTimer) initRadar(); // Start radar once we have enough history
+  // Start radar once we have enough history
+  if (!radarTimer) initRadar();
 
   // Top stats
   renderTopStats(standings);
@@ -896,42 +895,46 @@ function renderStats(standings) {
 }
 
 // ── Podium History Tracker + Radar Animation ──
-// Clear old history that had score-only changes (v2: only track position swaps)
-const rawHistory = JSON.parse(localStorage.getItem('masters-podium-history') || '[]');
-// Dedupe: keep only entries where the names differ from previous
-const podiumHistory = [];
-for (const snap of rawHistory) {
-  const prev = podiumHistory[podiumHistory.length - 1];
-  if (!prev || !prev.top3.every((p, i) => p.name === snap.top3[i]?.name)) {
-    podiumHistory.push(snap);
-  }
-}
-localStorage.setItem('masters-podium-history', JSON.stringify(podiumHistory));
-const MAX_HISTORY = 60;
-let radarIdx = -1; // -1 = live
+// History stored in Vercel Blob — shared across all users
+let podiumHistory = [];
+let radarIdx = -1;
 let radarTimer = null;
 let radarPaused = false;
 
-function trackPodium(standings) {
+async function loadHistory() {
+  try {
+    const res = await fetch('/api/history');
+    if (res.ok) podiumHistory = await res.json();
+  } catch {}
+}
+
+async function trackPodium(standings) {
   if (!standings[0] || standings[0].total === 0) return;
   const top3 = standings.slice(0, 3).map(s => ({ name: s.name, total: s.total }));
-  const last = podiumHistory[podiumHistory.length - 1];
 
-  // Only record if the podium NAMES changed (someone swapped position)
-  if (last) {
-    const sameOrder = last.top3.every((p, i) => p.name === top3[i]?.name);
-    if (sameOrder) {
-      // Update scores on the latest snapshot silently (keeps live totals current)
-      last.top3 = top3;
-      last.time = Date.now();
-      localStorage.setItem('masters-podium-history', JSON.stringify(podiumHistory));
-      return;
+  try {
+    const res = await fetch('/api/history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ top3 }),
+    });
+    const data = await res.json();
+    // Reload full history after save
+    if (data.saved) await loadHistory();
+    else {
+      // Scores updated on latest — update local copy
+      const last = podiumHistory[podiumHistory.length - 1];
+      if (last) { last.top3 = top3; last.time = Date.now(); }
+    }
+  } catch {
+    // Fallback: update local only
+    const last = podiumHistory[podiumHistory.length - 1];
+    if (last && last.top3.every((p, i) => p.name === top3[i]?.name)) {
+      last.top3 = top3; last.time = Date.now();
+    } else {
+      podiumHistory.push({ time: Date.now(), top3 });
     }
   }
-
-  podiumHistory.push({ time: Date.now(), top3 });
-  if (podiumHistory.length > MAX_HISTORY) podiumHistory.shift();
-  localStorage.setItem('masters-podium-history', JSON.stringify(podiumHistory));
 }
 
 function showPodiumState(snap, isLive) {
@@ -1051,9 +1054,18 @@ function switchTab(tab) {
   document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
 }
 
-async function refresh() { await fetchScores(); render(); }
-refresh();
-setInterval(refresh, 60000);
+async function refresh() {
+  await fetchScores();
+  const standings = calcStandings();
+  await trackPodium(standings);
+  render();
+}
+
+// Load history from server on startup, then start refreshing
+loadHistory().then(() => {
+  refresh();
+  setInterval(refresh, 60000);
+});
 </script>
 </body>
 </html>

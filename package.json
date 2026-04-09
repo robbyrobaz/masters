@@ -1,0 +1,24 @@
+{
+  "name": "masters-deploy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robbyrobaz/masters.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/robbyrobaz/masters/issues"
+  },
+  "homepage": "https://github.com/robbyrobaz/masters#readme",
+  "dependencies": {
+    "@vercel/blob": "^2.3.3"
+  }
+}
