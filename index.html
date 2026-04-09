@@ -889,12 +889,28 @@ function renderTopStats(standings) {
   }
   const progressPct = totalPoolHoles > 0 ? Math.round(completedHoles / totalPoolHoles * 100) : 0;
 
+  // Round-specific progress (how far through current round)
+  let roundHolesComplete = 0;
+  let roundHolesTotal = allPoolGolfers.size * 18;
+  for (const name of allPoolGolfers) {
+    const score = findPlayer(name);
+    if (!score || score.total === 0) continue;
+    if (score.thru === 'F' || score.thru === '18') {
+      roundHolesComplete += 18;
+    } else {
+      const thruNum = parseInt(score.thru) || 0;
+      roundHolesComplete += thruNum;
+    }
+  }
+  const roundPct = roundHolesTotal > 0 ? Math.round(roundHolesComplete / roundHolesTotal * 100) : 0;
+
   document.getElementById('stat-progress').textContent = progressPct + '%';
   document.getElementById('stat-progress-bar').style.width = progressPct + '%';
-  document.getElementById('stat-round').textContent = roundLabel + ' | ' + completedHoles + ' of ' + totalPoolHoles + ' holes';
+  document.getElementById('stat-round').textContent = roundLabel + ': ' + roundPct + '% complete | Overall: ' + completedHoles + ' of ' + totalPoolHoles + ' holes';
 
   document.getElementById('stat-reporting').textContent = reportingGolfers.size + ' / ' + allPoolGolfers.size;
-  document.getElementById('stat-reporting-detail').textContent = finishedGolfers.size + ' finished ' + roundLabel.toLowerCase();
+  const stillPlaying = reportingGolfers.size - finishedGolfers.size;
+  document.getElementById('stat-reporting-detail').textContent = finishedGolfers.size + ' finished, ' + (stillPlaying > 0 ? stillPlaying + ' still playing' : 'all done');
 
   // Best golfer
   if (sortedGolfers.length > 0) {
