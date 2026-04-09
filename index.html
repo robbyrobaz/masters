@@ -555,15 +555,19 @@ async function fetchScores() {
       // Use ESPN toPar if available; otherwise calculate from strokes
       let toPar = c.toPar;
       if ((!toPar || toPar === '') && total > 0) {
-        // If thru=F or thru=18, player finished — calculate from completed rounds
-        // Otherwise just show the raw total as a reference
         const isFinished = c.thru === 'F' || c.thru === '18';
+        const thruNum = parseInt(c.thru) || 0;
         if (isFinished && playedRounds.length > 0) {
+          // Completed round(s) — calculate to-par from full rounds
           const parTotal = playedRounds.length * 72;
           const diff = total - parTotal;
           toPar = diff === 0 ? 'E' : diff > 0 ? '+' + diff : '' + diff;
+        } else if (thruNum > 0) {
+          // Mid-round with known holes — estimate to-par (par ~4 per hole)
+          const estimatedPar = (playedRounds.length > 1 ? (playedRounds.length - 1) * 72 : 0) + thruNum * 4;
+          const diff = total - estimatedPar;
+          toPar = (diff === 0 ? 'E' : diff > 0 ? '+' + diff : '' + diff) + '*';
         } else if (playedRounds.length > 0) {
-          // Mid-round: show stroke total instead of bad to-par calc
           toPar = total.toString();
         }
       }
@@ -601,8 +605,9 @@ function findPlayer(name) {
 }
 
 function toParClass(tp) {
-  if (!tp || tp === '?') return 'even';
-  return tp.startsWith('-') ? 'under' : tp.startsWith('+') ? 'over' : 'even';
+  if (!tp || tp === '?' || tp === '—') return 'even';
+  const s = String(tp);
+  return s.startsWith('-') ? 'under' : (s.startsWith('+') || parseFloat(s) > 0) ? 'over' : 'even';
 }
 
 function calcStandings() {
@@ -629,7 +634,8 @@ function render() {
     if (s) {
       document.getElementById(`p${i+1}-name`).textContent = s.name;
       document.getElementById(`p${i+1}-score`).textContent = s.total || '—';
-      const gap = i === 0 ? 'Leader' : leaderTotal ? `+${s.total - leaderTotal} strokes` : '';
+      const gapVal = s.total - leaderTotal;
+      const gap = i === 0 ? 'Leader' : !leaderTotal ? '' : gapVal === 0 ? 'Tied' : `+${gapVal} strokes`;
       document.getElementById(`p${i+1}-gap`).textContent = gap;
     }
   }
@@ -679,7 +685,8 @@ function render() {
     const isMe = s.name === selectedName;
     const cls = isMe ? 'me' : rank <= 3 ? 'top3' : '';
     const rankCls = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
-    const behind = rank === 1 ? '—' : leaderTotal ? `+${s.total - leaderTotal}` : '';
+    const gap = s.total - leaderTotal;
+    const behind = rank === 1 ? '—' : !leaderTotal ? '' : gap === 0 ? 'TIED' : `+${gap}`;
 
     const cells = s.players.map(p => {
       const last = p.name.split(' ').pop();
@@ -967,7 +974,8 @@ function showPodiumState(snap, isLive) {
         document.getElementById('p' + (i + 1) + '-name').textContent = p.name;
         document.getElementById('p' + (i + 1) + '-score').textContent = p.total;
         const leaderTotal = snap.top3[0].total;
-        const gap = i === 0 ? 'Leader' : '+' + (p.total - leaderTotal) + ' strokes';
+        const gapStrokes = p.total - snap.top3[0].total;
+        const gap = i === 0 ? 'Leader' : gapStrokes === 0 ? 'Tied' : '+' + gapStrokes + ' strokes';
         document.getElementById('p' + (i + 1) + '-gap').textContent = gap;
       }
     }
@@ -1056,7 +1064,7 @@ function startRadarLoop() {
 }
 
 function initRadar() {
-  if (podiumHistory.length >= 3) {
+  if (podiumHistory.length >= 2) {
     startRadarLoop();
   }
   updateTimeline();
