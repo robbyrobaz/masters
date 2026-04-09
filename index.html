@@ -101,6 +101,41 @@
 
   .refresh-note { text-align: center; margin-top: 24px; font-size: 13px; color: #334455; padding-bottom: 24px; }
   .loading { text-align: center; padding: 40px; color: #556677; font-size: 18px; }
+
+  /* Tabs */
+  .tab-nav { display: flex; gap: 0; margin-top: 20px; border-bottom: 2px solid #1e3050; }
+  .tab-btn { padding: 14px 28px; font-size: 16px; font-weight: 600; color: #667788; background: none; border: none; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+  .tab-btn:hover { color: #a0b0c0; }
+  .tab-btn.active { color: #2ecc71; border-bottom-color: #2ecc71; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* AI Analysis Tab */
+  .ai-section { margin-top: 24px; }
+  .ai-section h3 { font-size: 20px; color: #fff; margin-bottom: 12px; }
+  .ai-section p { font-size: 15px; color: #a0b0c0; line-height: 1.7; margin-bottom: 12px; }
+  .ai-highlight { background: #0e1a2e; border-left: 4px solid #006747; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 16px 0; }
+  .ai-highlight .num { font-size: 36px; font-weight: 800; font-family: 'SF Mono',monospace; color: #2ecc71; }
+  .ai-highlight .label { font-size: 14px; color: #8899aa; }
+  .ai-stats-row { display: flex; gap: 16px; flex-wrap: wrap; margin: 20px 0; }
+  .ai-stat-card { flex: 1; min-width: 160px; background: #0e1a2e; border-radius: 10px; padding: 18px; text-align: center; border: 1px solid #1e3050; }
+  .ai-stat-card .num { font-size: 32px; font-weight: 800; font-family: 'SF Mono',monospace; color: #f4d03f; }
+  .ai-stat-card .label { font-size: 13px; color: #8899aa; margin-top: 4px; }
+  .round-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .round-table th { padding: 10px 12px; font-size: 13px; color: #667788; text-transform: uppercase; border-bottom: 2px solid #1e3050; text-align: left; }
+  .round-table td { padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #0e1a2e; }
+  .round-table tr:hover { background: #1a2a45; }
+  .round-table .winner { color: #2ecc71; font-weight: 700; }
+  .round-table .pct { font-family: monospace; }
+  .bias-tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .bias-tag.biased { background: #3d1515; color: #e74c3c; }
+  .bias-tag.neutral { background: #1a3525; color: #2ecc71; }
+  .bias-tag.stale { background: #332b15; color: #f4d03f; }
+  .bias-tag.empty { background: #1a2535; color: #5dade2; }
+  .model-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin: 16px 0; }
+  .model-chip { background: #0e1a2e; border: 1px solid #1e3050; border-radius: 8px; padding: 10px; text-align: center; font-size: 13px; }
+  .model-chip .family { font-size: 11px; color: #006747; text-transform: uppercase; }
+  .model-chip .name { font-weight: 600; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -114,6 +149,12 @@
 </div>
 
 <div class="container">
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('live')">Live Standings</button>
+    <button class="tab-btn" onclick="switchTab('ai')">AI Analysis</button>
+  </div>
+
+  <div id="tab-live" class="tab-content active">
   <div class="podium" id="podium">
     <div class="podium-spot second">
       <div class="podium-label">Currently 2nd — $100</div>
@@ -161,6 +202,161 @@
       <div id="stats-container"><div class="loading">Loading...</div></div>
     </div>
   </div>
+
+  <div class="refresh-note">Auto-refreshes every 60 seconds | Live scores via ESPN | Prizes: 1st $200 | 2nd $100 | 3rd $50</div>
+  </div><!-- end tab-live -->
+
+  <div id="tab-ai" class="tab-content">
+    <div class="ai-section">
+      <h3>How We Built This: AI-Powered Masters Pool Predictions</h3>
+      <p>Before the tournament, we ran an experiment: send the Masters pool data to as many AI models as possible and build a consensus lineup. What started as a fun project turned into an accidental lesson in AI bias and prompt engineering.</p>
+
+      <div class="ai-stats-row">
+        <div class="ai-stat-card"><div class="num">~100</div><div class="label">Total AI Votes</div></div>
+        <div class="ai-stat-card"><div class="num">30+</div><div class="label">AI Models Used</div></div>
+        <div class="ai-stat-card"><div class="num">12</div><div class="label">Model Families</div></div>
+        <div class="ai-stat-card"><div class="num">4</div><div class="label">Rounds Run</div></div>
+        <div class="ai-stat-card"><div class="num">200K</div><div class="label">Monte Carlo Sims</div></div>
+      </div>
+    </div>
+
+    <div class="card ai-section">
+      <h2>The 4 Rounds — Same Data, Different Results</h2>
+      <p>We discovered that <strong>how you frame data matters as much as the data itself</strong>. The same player stats produced completely different AI consensus depending on editorial framing in the prompt.</p>
+
+      <table class="round-table">
+        <thead><tr>
+          <th>Round</th><th>Prompt Style</th><th>Models</th><th>T1 Winner</th><th>T2 Winner</th><th>T3 Winner</th><th>T4</th><th>T5</th><th>T6</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="bias-tag stale">R1</span></td><td>Stale pre-tournament data</td><td>21</td>
+            <td class="winner">Scheffler <span class="pct">67%</span></td><td class="winner">Matsuyama <span class="pct">81%</span></td><td>Scott <span class="pct">76%</span></td>
+            <td>Conners 90%</td><td>Berger 95%</td><td>Gerard 90%</td>
+          </tr>
+          <tr>
+            <td><span class="bias-tag biased">R2</span></td><td>Full data + editorial bias</td><td>30</td>
+            <td style="color:#e74c3c">Fitzpatrick <span class="pct">90%</span></td><td style="color:#e74c3c">Reed <span class="pct">90%</span></td><td>Scott <span class="pct">60%</span></td>
+            <td>Conners 97%</td><td>Berger 93%</td><td>Gerard 93%</td>
+          </tr>
+          <tr>
+            <td><span class="bias-tag empty">R3</span></td><td>Minimal neutral data</td><td>25</td>
+            <td class="winner">Scheffler <span class="pct">64%</span></td><td class="winner">Matsuyama <span class="pct">88%</span></td><td>Lee <span class="pct">52%</span></td>
+            <td>Conners 84%</td><td>Berger 68%</td><td>Gerard 40%</td>
+          </tr>
+          <tr>
+            <td><span class="bias-tag neutral">R4</span></td><td>Full data, neutral framing</td><td>27</td>
+            <td>Scheffler <span class="pct">41%</span></td><td class="winner">Reed <span class="pct">74%</span></td><td>Lee <span class="pct">52%</span></td>
+            <td>Conners 93%</td><td>Berger 78%</td><td>Garcia 52%</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="ai-highlight">
+        <p style="color:#fff;font-size:16px;margin:0"><strong>Key Finding:</strong> Round 2 used phrases like "Scheffler CRASHED," "Reed = contrarian gold," and "AVOID" labels. This swung Tier 1 from 67% Scheffler to 90% Fitzpatrick. When the same facts were presented neutrally in Round 4, Scheffler returned to #1 at 41%. <strong>AI models are highly susceptible to editorial framing.</strong></p>
+      </div>
+    </div>
+
+    <div class="card ai-section">
+      <h2>The Bias-Proof Picks (Consistent Across All 4 Rounds)</h2>
+      <p>These picks survived every prompt framing — they're the genuine signal, not artifacts of how we asked the question.</p>
+      <table class="round-table">
+        <thead><tr><th>Tier</th><th>Player</th><th>R1</th><th>R2</th><th>R3</th><th>R4</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td>T4</td><td style="font-weight:700;color:#2ecc71">Corey Conners</td><td class="pct">90%</td><td class="pct">97%</td><td class="pct">84%</td><td class="pct">93%</td><td>Most bias-proof pick in entire study</td></tr>
+          <tr><td>T5</td><td style="font-weight:700;color:#2ecc71">Daniel Berger</td><td class="pct">95%</td><td class="pct">93%</td><td class="pct">68%</td><td class="pct">78%</td><td>Held strong across all framings</td></tr>
+          <tr><td>T2</td><td style="font-weight:700;color:#2ecc71">Patrick Reed</td><td class="pct">18%</td><td class="pct">90%</td><td class="pct">0%</td><td class="pct" style="color:#2ecc71">74%</td><td>R4 proved this was real signal, not just bias</td></tr>
+          <tr><td>T3</td><td style="font-weight:700;color:#f4d03f">Min Woo Lee</td><td class="pct">24%</td><td class="pct">37%</td><td class="pct">52%</td><td class="pct">52%</td><td>Support GREW when bias removed</td></tr>
+          <tr><td>T1</td><td style="font-weight:700;color:#f4d03f">Scottie Scheffler</td><td class="pct">67%</td><td class="pct">3%</td><td class="pct">64%</td><td class="pct">41%</td><td>Default #1 without editorial framing</td></tr>
+          <tr><td>T6</td><td style="font-weight:700;color:#f4d03f">Garcia vs Gerard</td><td class="pct">G:90%</td><td class="pct">G:93%</td><td class="pct">Tied</td><td class="pct">Ga:52%</td><td>Garcia wins with neutral data; Gerard wins with bias</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="side-grid ai-section">
+      <div class="card">
+        <h2>Round 4 — Individual Model Votes (Definitive Round)</h2>
+        <p style="font-size:13px;color:#667788;margin-bottom:12px">Full data, neutral framing, 27 models. The most trustworthy consensus.</p>
+        <div class="standings-wrap">
+        <table class="round-table" style="font-size:13px">
+          <thead><tr><th>Model</th><th>Family</th><th>T1</th><th>T2</th><th>T3</th><th>T4</th><th>T5</th><th>T6</th></tr></thead>
+          <tbody>
+            <tr><td>Claude Opus 4.6</td><td>Anthropic</td><td>Scheffler</td><td>Matsuyama</td><td>Lee</td><td>Conners</td><td>Berger</td><td>Gerard</td></tr>
+            <tr><td>Claude Sonnet 4.6</td><td>Anthropic</td><td>Fitzpatrick</td><td>Reed</td><td>Scott</td><td>Conners</td><td>Berger</td><td>Gerard</td></tr>
+            <tr><td>Grok 4.1 Fast</td><td>xAI</td><td>Schauffele</td><td>Reed</td><td>Scott</td><td>Conners</td><td>Berger</td><td>Garcia</td></tr>
+            <tr><td>Grok 3 Mini</td><td>xAI</td><td>Scheffler</td><td>Matsuyama</td><td>Scott</td><td>Conners</td><td>Berger</td><td>Garcia</td></tr>
+            <tr><td>DeepSeek V3.1</td><td>DeepSeek</td><td>Fitzpatrick</td><td>Reed</td><td>Scott</td><td>Conners</td><td>Im</td><td>Garcia</td></tr>
+            <tr><td>DeepSeek V3.2</td><td>DeepSeek</td><td>Fitzpatrick</td><td>Kim</td><td>Lee</td><td>Conners</td><td>Berger</td><td>Gerard</td></tr>
+            <tr><td>DeepSeek R1</td><td>DeepSeek</td><td>Schauffele</td><td>Reed</td><td>Scott</td><td>Conners</td><td>Im</td><td>Gerard</td></tr>
+            <tr><td>Gemini 2.5 Flash</td><td>Google</td><td>Schauffele</td><td>Reed</td><td>Lee</td><td>Conners</td><td>Berger</td><td>Garcia</td></tr>
+            <tr><td>Llama 4 Scout</td><td>Meta</td><td>Scheffler</td><td>Reed</td><td>Lee</td><td>Conners</td><td>Berger</td><td>Garcia</td></tr>
+            <tr><td>Llama 4 Maverick</td><td>Meta</td><td>Scheffler</td><td>Reed</td><td>Lee</td><td>Conners</td><td>Berger</td><td>Garcia</td></tr>
+            <tr><td>Mistral Small 3.1</td><td>Mistral</td><td>Schauffele</td><td>Reed</td><td>Scott</td><td>Conners</td><td>Berger</td><td>Gerard</td></tr>
+            <tr><td>GPT-OSS-120B</td><td>OpenAI</td><td>Scheffler</td><td>Reed</td><td>Lee</td><td>Conners</td><td>Berger</td><td>Garcia</td></tr>
+            <tr><td>GPT-OSS-20B</td><td>OpenAI</td><td>Aberg</td><td>Reed</td><td>Scott</td><td>Conners</td><td>Berger</td><td>Gerard</td></tr>
+            <tr><td>MiniMax M2.5</td><td>MiniMax</td><td>Fitzpatrick</td><td>Reed</td><td>Scott</td><td>Conners</td><td>Im</td><td>—</td></tr>
+            <tr><td>Arcee Trinity</td><td>Arcee</td><td>Scheffler</td><td>Reed</td><td>Scott</td><td>Conners</td><td>Berger</td><td>Gerard</td></tr>
+            <tr><td>Qwen3-Max</td><td>Alibaba</td><td>Fitzpatrick</td><td>Kim</td><td>Scott</td><td>Conners</td><td>Berger</td><td>Garcia</td></tr>
+            <tr><td>Qwen3.5-Plus</td><td>Alibaba</td><td>Schauffele</td><td>Reed</td><td>Scott</td><td>Conners</td><td>Berger</td><td>Garcia</td></tr>
+            <tr><td>Qwen3.5-Flash</td><td>Alibaba</td><td>Rahm</td><td>Reed</td><td>Lee</td><td>Conners</td><td>Berger</td><td>Garcia</td></tr>
+            <tr><td>Qwen-Plus</td><td>Alibaba</td><td>Fitzpatrick</td><td>Reed</td><td>Scott</td><td>Conners</td><td>Berger</td><td>Garcia</td></tr>
+            <tr><td>Qwen-Flash</td><td>Alibaba</td><td>Scheffler</td><td>Reed</td><td>Lee</td><td>Conners</td><td>Berger</td><td>Gerard</td></tr>
+            <tr><td>Qwen3-235B</td><td>Alibaba</td><td>Rahm</td><td>Reed</td><td>Lee</td><td>Conners</td><td>Woodland</td><td>Garcia</td></tr>
+            <tr><td>Qwen3-32B</td><td>Alibaba</td><td>Rahm</td><td>Reed</td><td>Lee</td><td>Conners</td><td>Berger</td><td>Gerard</td></tr>
+            <tr><td>Qwen3-14B</td><td>Alibaba</td><td>Scheffler</td><td>Reed</td><td>Lee</td><td>Conners</td><td>Berger</td><td>Garcia</td></tr>
+            <tr><td>Qwen3-8B</td><td>Alibaba</td><td>Scheffler</td><td>Aberg</td><td>Lee</td><td>Conners</td><td>Berger</td><td>Garcia</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>AI Models Used</h2>
+        <p style="font-size:13px;color:#667788;margin-bottom:12px">We queried models across every major AI provider — free, cheap, and frontier.</p>
+        <div class="model-grid">
+          <div class="model-chip"><div class="family">Anthropic</div><div class="name">Claude Opus 4.6</div></div>
+          <div class="model-chip"><div class="family">Anthropic</div><div class="name">Claude Sonnet 4.6</div></div>
+          <div class="model-chip"><div class="family">OpenAI</div><div class="name">ChatGPT-4o</div></div>
+          <div class="model-chip"><div class="family">OpenAI</div><div class="name">GPT-OSS-120B</div></div>
+          <div class="model-chip"><div class="family">OpenAI</div><div class="name">GPT-OSS-20B</div></div>
+          <div class="model-chip"><div class="family">xAI</div><div class="name">Grok 4</div></div>
+          <div class="model-chip"><div class="family">xAI</div><div class="name">Grok 4.1 Fast</div></div>
+          <div class="model-chip"><div class="family">xAI</div><div class="name">Grok 3 Mini</div></div>
+          <div class="model-chip"><div class="family">DeepSeek</div><div class="name">V3 / V3.1 / V3.2</div></div>
+          <div class="model-chip"><div class="family">DeepSeek</div><div class="name">R1 (Reasoning)</div></div>
+          <div class="model-chip"><div class="family">Google</div><div class="name">Gemini 2.5 Flash</div></div>
+          <div class="model-chip"><div class="family">Google</div><div class="name">Gemini 2.5 Pro</div></div>
+          <div class="model-chip"><div class="family">Meta</div><div class="name">Llama 4 Scout</div></div>
+          <div class="model-chip"><div class="family">Meta</div><div class="name">Llama 4 Maverick</div></div>
+          <div class="model-chip"><div class="family">Mistral</div><div class="name">Small 3.1</div></div>
+          <div class="model-chip"><div class="family">MiniMax</div><div class="name">M2.7 / M2.5</div></div>
+          <div class="model-chip"><div class="family">Alibaba</div><div class="name">Qwen3 (9 variants)</div></div>
+          <div class="model-chip"><div class="family">NVIDIA</div><div class="name">Nemotron 120B/30B</div></div>
+          <div class="model-chip"><div class="family">Zhipu</div><div class="name">GLM-4.5 Air</div></div>
+          <div class="model-chip"><div class="family">Arcee</div><div class="name">Trinity Large</div></div>
+          <div class="model-chip"><div class="family">StepFun</div><div class="name">Step 3.5 Flash</div></div>
+        </div>
+
+        <div class="ai-highlight" style="margin-top:20px">
+          <div class="stat-label">Platforms Used</div>
+          <p style="font-size:14px;color:#a0b0c0;margin:8px 0 0 0">
+            <strong>OpenRouter</strong> (free + paid models) | <strong>Alibaba Cloud Model Studio</strong> (Qwen family) | <strong>MiniMax Direct API</strong> | <strong>Claude Code</strong> (Opus + Sonnet locally) | <strong>Manual</strong> (ChatGPT, Grok, DeepSeek web)
+          </p>
+        </div>
+
+        <div class="ai-highlight" style="margin-top:12px">
+          <div class="stat-label">What We Learned</div>
+          <p style="font-size:14px;color:#a0b0c0;margin:8px 0 0 0">
+            1. AI consensus is only as unbiased as the prompt<br>
+            2. "30 models agree" can be an echo chamber if you lead the question<br>
+            3. The picks that survive all framings are the real signal (Conners, Berger)<br>
+            4. Models with their own knowledge found things we missed (Rahm's surge, Lee's form)<br>
+            5. Always run multiple rounds with different framings before trusting a consensus
+          </p>
+        </div>
+      </div>
+    </div>
+  </div><!-- end tab-ai -->
 
   <div class="refresh-note">Auto-refreshes every 60 seconds | Live scores via ESPN | Prizes: 1st $200 | 2nd $100 | 3rd $50</div>
 </div>
@@ -511,6 +707,13 @@ function renderStats(standings) {
 
   html += '</div>';
   el.innerHTML = html;
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
 }
 
 async function refresh() { await fetchScores(); render(); }
