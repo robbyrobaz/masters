@@ -10,28 +10,69 @@
 
   .header { background: linear-gradient(135deg, #006747 0%, #004d35 100%); padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3); flex-wrap: wrap; gap: 10px; }
   .header h1 { font-size: 22px; color: #fff; }
-  .header h1 span { color: #f4d03f; }
+  .header h1 .icon { color: #f4d03f; }
   .header .meta { text-align: right; font-size: 13px; color: #a0d8b8; }
   .header .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #e74c3c; animation: pulse 1.5s infinite; margin-right: 6px; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
   .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
 
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
-  @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+  /* Podium */
+  .podium { display: flex; justify-content: center; align-items: flex-end; gap: 12px; margin: 20px 0; flex-wrap: wrap; }
+  .podium-spot { text-align: center; border-radius: 12px; padding: 16px 20px; min-width: 180px; }
+  .podium-spot.first { background: linear-gradient(135deg, #4a3600, #2a2000); border: 2px solid #f4d03f; order: 2; padding-bottom: 24px; }
+  .podium-spot.second { background: linear-gradient(135deg, #2a2a30, #1a1a20); border: 2px solid #c0c0c0; order: 1; }
+  .podium-spot.third { background: linear-gradient(135deg, #2a1a10, #1a1008); border: 2px solid #cd7f32; order: 3; }
+  .podium-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .podium-spot.first .podium-label { color: #f4d03f; }
+  .podium-spot.second .podium-label { color: #c0c0c0; }
+  .podium-spot.third .podium-label { color: #cd7f32; }
+  .podium-name { font-size: 18px; font-weight: 700; color: #fff; }
+  .podium-score { font-size: 28px; font-weight: 800; font-family: 'SF Mono',monospace; margin: 4px 0; }
+  .podium-spot.first .podium-score { color: #f4d03f; }
+  .podium-spot.second .podium-score { color: #c0c0c0; }
+  .podium-spot.third .podium-score { color: #cd7f32; }
+  .podium-prize { font-size: 12px; color: #8899aa; }
+
+  /* Find Me */
+  .find-me { display: flex; align-items: center; gap: 10px; margin: 16px 0; flex-wrap: wrap; }
+  .find-me label { font-size: 13px; color: #8899aa; }
+  .find-me select { background: #131f35; color: #e0e7ef; border: 1px solid #1e3050; border-radius: 8px; padding: 8px 12px; font-size: 14px; cursor: pointer; }
+  .find-me select:focus { outline: none; border-color: #006747; }
+
+  /* My Lineup */
+  .my-lineup { display: none; margin: 12px 0; }
+  .my-lineup.active { display: block; }
+  .my-lineup-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  @media (max-width: 900px) { .my-lineup-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 500px) { .my-lineup-grid { grid-template-columns: repeat(2, 1fr); } }
 
   .card { background: #131f35; border-radius: 12px; padding: 18px; border: 1px solid #1e3050; }
   .card h2 { font-size: 14px; color: #8899aa; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
 
+  .player-card { background: #0e1a2e; border-radius: 8px; padding: 12px; border: 1px solid #1e3050; text-align: center; }
+  .player-card .tier { font-size: 10px; color: #667788; text-transform: uppercase; }
+  .player-card .name { font-size: 13px; font-weight: 600; margin: 3px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .player-card .score-big { font-size: 28px; font-weight: 700; font-family: 'SF Mono',monospace; }
+  .player-card .details { font-size: 11px; color: #8899aa; margin-top: 3px; }
+  .player-card.good { border-color: #1a5535; }
+  .player-card.good .score-big { color: #2ecc71; }
+  .player-card.bad .score-big { color: #e74c3c; }
+  .player-card.neutral .score-big { color: #f4d03f; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+
+  /* Standings */
   .standings-table { width: 100%; border-collapse: collapse; }
   .standings-table th { text-align: left; padding: 6px 8px; font-size: 10px; color: #667788; text-transform: uppercase; border-bottom: 1px solid #1e3050; }
   .standings-table td { padding: 5px 8px; font-size: 13px; border-bottom: 1px solid #0e1a2e; }
-  .standings-table tr:hover { background: #1a2a45; }
-  .standings-table tr.rob { background: #1a3525 !important; border-left: 3px solid #2ecc71; }
-  .standings-table tr.rob td { color: #fff; font-weight: 600; }
-  .standings-table tr.top3 td:first-child { color: #f4d03f; font-weight: 700; }
+  .standings-table tr:hover { background: #1a2a45; cursor: pointer; }
+  .standings-table tr.me { background: #1a3525 !important; border-left: 3px solid #2ecc71; }
+  .standings-table tr.me td { color: #fff; font-weight: 600; }
+  .standings-table tr.top3 td:first-child { font-weight: 700; }
 
-  .rank-1 { color: #f4d03f !important; font-size: 15px; }
+  .rank-1 { color: #f4d03f !important; }
   .rank-2 { color: #c0c0c0 !important; }
   .rank-3 { color: #cd7f32 !important; }
   .score { font-family: 'SF Mono','Consolas',monospace; font-weight: 600; text-align: right; }
@@ -40,36 +81,27 @@
   .over { color: #e67e22; }
   .even { color: #f4d03f; }
 
-  .rob-detail { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
-  @media (max-width: 900px) { .rob-detail { grid-template-columns: repeat(3, 1fr); } }
-  @media (max-width: 500px) { .rob-detail { grid-template-columns: repeat(2, 1fr); } }
-  .player-card { background: #0e1a2e; border-radius: 8px; padding: 12px; border: 1px solid #1e3050; text-align: center; }
-  .player-card .tier { font-size: 10px; color: #667788; text-transform: uppercase; }
-  .player-card .name { font-size: 13px; font-weight: 600; margin: 3px 0; }
-  .player-card .score-big { font-size: 32px; font-weight: 700; font-family: 'SF Mono',monospace; }
-  .player-card .details { font-size: 11px; color: #8899aa; margin-top: 3px; }
-  .player-card.good { border-color: #1a5535; }
-  .player-card.good .score-big { color: #2ecc71; }
-  .player-card.bad .score-big { color: #e74c3c; }
-  .player-card.neutral .score-big { color: #f4d03f; }
+  /* Fun Stats */
+  .fun-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .fun-stats { grid-template-columns: 1fr; } }
+  .stat-item { background: #0e1a2e; border-radius: 8px; padding: 14px; }
+  .stat-item .stat-label { font-size: 11px; color: #667788; text-transform: uppercase; }
+  .stat-item .stat-value { font-size: 18px; font-weight: 700; margin-top: 4px; }
+  .stat-item .stat-detail { font-size: 12px; color: #8899aa; margin-top: 2px; }
 
-  .sim-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 600; }
-  .sim-badge.win { background: #1a3525; color: #2ecc71; }
+  .pop-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .pop-bar .bar { height: 14px; background: #006747; border-radius: 3px; min-width: 2px; }
+  .pop-bar .pop-name { font-size: 12px; min-width: 100px; }
+  .pop-bar .pop-count { font-size: 11px; color: #8899aa; }
 
-  .rob-rank-banner { background: linear-gradient(135deg, #1a3525, #0e2a1a); border: 2px solid #2ecc71; border-radius: 12px; padding: 16px 24px; margin-top: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-  .rob-rank-banner .big-rank { font-size: 48px; font-weight: 800; color: #2ecc71; font-family: 'SF Mono',monospace; }
-  .rob-rank-banner .label { font-size: 14px; color: #a0d8b8; }
-  .rob-rank-banner .total { font-size: 28px; font-weight: 700; font-family: 'SF Mono',monospace; color: #fff; }
-
-  .refresh-note { text-align: center; margin-top: 16px; font-size: 11px; color: #445566; }
+  .refresh-note { text-align: center; margin-top: 20px; font-size: 11px; color: #334455; padding-bottom: 20px; }
   .loading { text-align: center; padding: 40px; color: #556677; font-size: 16px; }
-  .error-msg { background: #3d1515; border: 1px solid #6b2020; border-radius: 8px; padding: 12px; text-align: center; color: #e74c3c; font-size: 13px; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1><span>⛳</span> Adeptia Masters Pool 2026</h1>
+  <h1><span class="icon">⛳</span> Adeptia Masters Pool 2026</h1>
   <div class="meta">
     <div><span class="live-dot"></span> <span id="live-status">Connecting...</span></div>
     <div id="last-update" style="margin-top:4px;"></div>
@@ -77,29 +109,37 @@
 </div>
 
 <div class="container">
-  <div id="rob-banner" class="rob-rank-banner" style="display:none;">
-    <div><div class="label">Rob's Current Rank</div><div class="big-rank" id="rob-rank-num">#1</div></div>
-    <div><div class="label">Total Strokes</div><div class="total" id="rob-total">—</div></div>
-    <div><div class="label">Pre-Tourney Win Probability</div><div class="total" style="color:#2ecc71" id="rob-winpct">13.0%</div></div>
+  <!-- Podium -->
+  <div class="podium" id="podium">
+    <div class="podium-spot second"><div class="podium-label">2nd — $100</div><div class="podium-name" id="p2-name">—</div><div class="podium-score" id="p2-score">—</div></div>
+    <div class="podium-spot first"><div class="podium-label">1st — $200</div><div class="podium-name" id="p1-name">—</div><div class="podium-score" id="p1-score">—</div></div>
+    <div class="podium-spot third"><div class="podium-label">3rd — $50</div><div class="podium-name" id="p3-name">—</div><div class="podium-score" id="p3-score">—</div></div>
   </div>
 
-  <div class="card" style="margin-top:16px;">
-    <h2>Rob's Lineup</h2>
-    <div class="rob-detail" id="rob-players"><div class="loading">Loading live scores...</div></div>
+  <!-- Find Me + My Lineup -->
+  <div class="card">
+    <div class="find-me">
+      <label for="me-select">Find my lineup:</label>
+      <select id="me-select"><option value="">-- Select your name --</option></select>
+    </div>
+    <div class="my-lineup" id="my-lineup">
+      <div class="my-lineup-grid" id="my-players"></div>
+    </div>
   </div>
 
+  <!-- Standings + Fun Stats -->
   <div class="grid">
     <div class="card">
-      <h2>Pool Standings (27 entries)</h2>
+      <h2>Pool Standings</h2>
       <div id="standings-container"><div class="loading">Loading...</div></div>
     </div>
     <div class="card">
-      <h2>Opponent Danger Watch</h2>
-      <div id="danger-container"><div class="loading">Loading...</div></div>
+      <h2>Pool Stats</h2>
+      <div id="stats-container"><div class="loading">Loading...</div></div>
     </div>
   </div>
 
-  <div class="refresh-note">Auto-refreshes every 60 seconds | Scores via ESPN API</div>
+  <div class="refresh-note">Auto-refreshes every 60 seconds | Scores via ESPN | Prizes: 1st $200, 2nd $100, 3rd $50</div>
 </div>
 
 <script>
@@ -134,40 +174,28 @@ const POOL = [
 ];
 
 const MC_PENALTY = 82;
-const SIM_DATA = {
-  'Rob Hartwig': { winPct: 13.0, top3Pct: 33.6 },
-  'Mani Nandu': { winPct: 11.1, top3Pct: 28.0 },
-  'Aman Jain': { winPct: 7.0, top3Pct: 18.2 },
-  'Krishna Kumar': { winPct: 6.4, top3Pct: 18.6 },
-  'Tim Bond': { winPct: 5.7, top3Pct: 17.9 },
-  'Madison Barett': { winPct: 4.9, top3Pct: 14.7 },
-  'Rachel Sperry': { winPct: 4.7, top3Pct: 13.0 },
-  'Chris Monterio': { winPct: 4.4, top3Pct: 13.4 },
-  'Dan Kerns': { winPct: 4.2, top3Pct: 12.2 },
-  'Allie Chu': { winPct: 3.0, top3Pct: 10.5 },
-  'Charles Nardi': { winPct: 0.3, top3Pct: 1.2 },
-};
-
-const DANGER_PICKS = {
-  'Brooks Koepka': '2 straight Augusta MCs (46% MC rate)',
-  'Wyndham Clark': '2 straight Augusta MCs (68% MC rate)',
-  'Jacob Bridgeman': 'Masters debut (40% MC rate)',
-  'Michael Kim': '350/1 longshot (60% MC rate)',
-  'Dustin Johnson': '2 straight MCs + declining (69% MC rate)',
-  'Keegan Bradley': 'Poor Augusta history (55% MC rate)',
-  'Sam Burns': 'Lost SG:Approach at Augusta 2 straight yrs',
-  'Zach Johnson': '600/1, age 50 (70% MC rate)',
-  'Andrew Novak': '400/1 longshot (60% MC rate)',
-  'Marco Penge': 'Augusta debut, 160/1 (55% MC rate)',
-  'Nicolas Echavarria': '310/1 longshot (65% MC rate)',
-  'Brian Harman': 'MC at last Masters (55% MC rate)',
-};
-
 let playerScores = {};
+let selectedName = localStorage.getItem('masters-me') || '';
+
+// Populate select
+const sel = document.getElementById('me-select');
+POOL.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
+  const opt = document.createElement('option');
+  opt.value = p.name; opt.textContent = p.name;
+  if (p.name === selectedName) opt.selected = true;
+  sel.appendChild(opt);
+});
+// Re-sort pool back for standings
+POOL.sort((a,b) => a.name.localeCompare(b.name));
+
+sel.addEventListener('change', () => {
+  selectedName = sel.value;
+  localStorage.setItem('masters-me', selectedName);
+  render();
+});
 
 async function fetchScores() {
   try {
-    // Try the Vercel API route first, fall back to direct ESPN
     let url = '/api/scores';
     let res = await fetch(url).catch(() => null);
     if (!res || !res.ok) {
@@ -175,9 +203,7 @@ async function fetchScores() {
       res = await fetch(url);
     }
     const data = await res.json();
-
     const competitors = data.competitors || [];
-    // If we got raw ESPN data, parse it
     if (!data.competitors && data.events) {
       const event = data.events[0];
       for (const comp of event?.competitions?.[0]?.competitors || []) {
@@ -191,41 +217,29 @@ async function fetchScores() {
       }
       data.eventName = event?.name;
     }
-
     playerScores = {};
     for (const c of competitors) {
       let total = c.roundScores?.reduce((s, r) => s + r, 0) || 0;
-      if (c.isCut) {
-        const played = c.roundScores?.filter(r => r > 0).length || 0;
-        total += (4 - played) * MC_PENALTY;
-      }
+      if (c.isCut) { const played = c.roundScores?.filter(r => r > 0).length || 0; total += (4 - played) * MC_PENALTY; }
       playerScores[c.name] = { total, toPar: c.toPar, thru: c.thru, position: c.position, isCut: c.isCut, rounds: c.roundScores || [] };
     }
-
     document.getElementById('live-status').textContent = 'LIVE — ' + (data.eventName || 'Masters 2026');
     document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
-    return true;
   } catch (err) {
-    document.getElementById('live-status').textContent = 'Retrying... (' + err.message + ')';
-    return false;
+    document.getElementById('live-status').textContent = 'Retrying...';
   }
 }
 
 function findPlayer(name) {
   if (playerScores[name]) return playerScores[name];
   const last = name.split(' ').pop();
-  for (const [k, v] of Object.entries(playerScores)) {
-    if (k.includes(last)) return v;
-  }
+  for (const [k, v] of Object.entries(playerScores)) { if (k.includes(last)) return v; }
   return null;
 }
 
 function toParClass(toPar) {
   if (!toPar || toPar === '?') return 'even';
-  if (toPar.startsWith('-')) return 'under';
-  if (toPar.startsWith('+')) return 'over';
-  if (toPar === 'E') return 'even';
-  return 'even';
+  return toPar.startsWith('-') ? 'under' : toPar.startsWith('+') ? 'over' : 'even';
 }
 
 function calcStandings() {
@@ -233,32 +247,17 @@ function calcStandings() {
     let total = 0;
     const players = entry.picks.map((pick, i) => {
       const score = findPlayer(pick);
-      if (score) {
-        total += score.total;
-        return { name: pick, tier: i+1, ...score };
-      }
+      if (score) { total += score.total; return { name: pick, tier: i+1, ...score }; }
       return { name: pick, tier: i+1, total: 0, toPar: '?', thru: '', isCut: false, rounds: [] };
     });
-    return { name: entry.name, total, players, isRob: entry.name === 'Rob Hartwig' };
+    return { name: entry.name, total, players };
   });
   standings.sort((a, b) => a.total - b.total);
   return standings;
 }
 
-function render() {
-  const standings = calcStandings();
-  const rob = standings.find(s => s.isRob);
-  const robRank = standings.indexOf(rob) + 1;
-
-  // Rob banner
-  const banner = document.getElementById('rob-banner');
-  banner.style.display = 'flex';
-  document.getElementById('rob-rank-num').textContent = '#' + robRank;
-  document.getElementById('rob-total').textContent = rob.total || '—';
-
-  // Rob's players
-  const robEl = document.getElementById('rob-players');
-  robEl.innerHTML = rob.players.map(p => {
+function renderPlayerCards(players, container) {
+  container.innerHTML = players.map(p => {
     const cls = p.isCut ? 'bad' : toParClass(p.toPar) === 'under' ? 'good' : toParClass(p.toPar) === 'over' ? 'bad' : 'neutral';
     const thru = p.thru ? 'Thru ' + p.thru : '';
     const rounds = p.rounds?.filter(r => r > 0).join(' - ') || '';
@@ -269,19 +268,44 @@ function render() {
       <div class="details">${[p.position, thru, rounds].filter(Boolean).join(' | ')}</div>
     </div>`;
   }).join('');
+}
+
+function render() {
+  const standings = calcStandings();
+
+  // Podium
+  for (let i = 0; i < 3; i++) {
+    const s = standings[i];
+    if (s) {
+      document.getElementById(`p${i+1}-name`).textContent = s.name;
+      document.getElementById(`p${i+1}-score`).textContent = s.total || '—';
+    }
+  }
+
+  // My lineup
+  const myLineup = document.getElementById('my-lineup');
+  const myPlayers = document.getElementById('my-players');
+  if (selectedName) {
+    const me = standings.find(s => s.name === selectedName);
+    if (me) {
+      myLineup.classList.add('active');
+      renderPlayerCards(me.players, myPlayers);
+    }
+  } else {
+    myLineup.classList.remove('active');
+  }
 
   // Standings table
   const stEl = document.getElementById('standings-container');
   let html = `<table class="standings-table"><thead><tr>
-    <th>#</th><th>Name</th><th>T1</th><th>T2</th><th>T3</th><th>T4</th><th>T5</th><th>T6</th><th style="text-align:right">Strokes</th><th>Sim</th>
+    <th>#</th><th>Name</th><th>T1</th><th>T2</th><th>T3</th><th>T4</th><th>T5</th><th>T6</th><th style="text-align:right">Total</th>
   </tr></thead><tbody>`;
 
   standings.forEach((s, i) => {
     const rank = i + 1;
-    const cls = s.isRob ? 'rob' : rank <= 3 ? 'top3' : '';
+    const isMe = s.name === selectedName;
+    const cls = isMe ? 'me' : rank <= 3 ? 'top3' : '';
     const rankCls = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
-    const sim = SIM_DATA[s.name];
-    const simHtml = sim ? `<span class="sim-badge win">${sim.winPct}%</span>` : '';
 
     const cells = s.players.map(p => {
       const last = p.name.split(' ').pop();
@@ -290,51 +314,118 @@ function render() {
       return `<td style="font-size:11px" title="${p.name}"><span class="${cls}">${last}</span><br><span style="font-family:monospace;font-size:10px" class="${cls}">${p.toPar || '—'}</span>${cutMark}</td>`;
     }).join('');
 
-    html += `<tr class="${cls}">
+    html += `<tr class="${cls}" onclick="document.getElementById('me-select').value='${s.name}';document.getElementById('me-select').dispatchEvent(new Event('change'));">
       <td class="${rankCls}" style="font-weight:700;text-align:center">${rank}</td>
-      <td>${s.name}${s.isRob ? ' ⛳' : ''}</td>
+      <td>${s.name}</td>
       ${cells}
       <td class="score">${s.total || '—'}</td>
-      <td>${simHtml}</td>
     </tr>`;
   });
   html += '</tbody></table>';
   stEl.innerHTML = html;
 
-  // Danger watch
-  const dangerEl = document.getElementById('danger-container');
-  const dangers = [];
-  for (const s of standings) {
-    if (s.isRob) continue;
-    for (const p of s.players) {
-      if (DANGER_PICKS[p.name]) {
-        dangers.push({ owner: s.name, player: p.name, tier: p.tier, toPar: p.toPar, isCut: p.isCut, reason: DANGER_PICKS[p.name] });
+  // Fun stats
+  renderStats(standings);
+}
+
+function renderStats(standings) {
+  const el = document.getElementById('stats-container');
+
+  // Most popular picks per tier
+  const tierNames = ['','Tier 1','Tier 2','Tier 3','Tier 4','Tier 5','Tier 6'];
+  const popPicks = [];
+  for (let t = 0; t < 6; t++) {
+    const counts = {};
+    for (const entry of POOL) {
+      const p = entry.picks[t];
+      const last = p.split(' ').pop();
+      counts[last] = (counts[last] || 0) + 1;
+    }
+    const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+    popPicks.push({ tier: tierNames[t+1], top: sorted.slice(0, 3) });
+  }
+
+  // Unique picks (only 1 person has them)
+  const uniquePicks = [];
+  for (const entry of POOL) {
+    for (let t = 0; t < 6; t++) {
+      const pick = entry.picks[t];
+      const count = POOL.filter(p => p.picks[t] === pick).length;
+      if (count === 1) uniquePicks.push({ owner: entry.name.split(' ')[0], player: pick.split(' ').pop(), tier: t + 1 });
+    }
+  }
+
+  // Best/worst individual golfer scores
+  const allPlayerScores = [];
+  for (const [name, data] of Object.entries(playerScores)) {
+    if (data.total > 0) {
+      const owners = [];
+      for (const entry of POOL) {
+        if (entry.picks.some(p => { const found = findPlayer(p); return found === data; })) {
+          owners.push(entry.name.split(' ')[0]);
+        }
       }
+      allPlayerScores.push({ name: name.split(' ').pop(), toPar: data.toPar, owners });
     }
   }
-  if (dangers.length === 0) {
-    dangerEl.innerHTML = '<p style="color:#667788;padding:20px;text-align:center">No danger picks tracked yet</p>';
+
+  let html = '<div class="fun-stats">';
+
+  // Most popular by tier
+  html += '<div class="stat-item"><div class="stat-label">Most Popular Picks</div>';
+  for (const pp of popPicks) {
+    const top = pp.top[0];
+    if (top) {
+      const pct = Math.round(top[1] / POOL.length * 100);
+      html += `<div class="pop-bar"><span class="pop-name" style="color:#8899aa;font-size:11px">${pp.tier}:</span><div class="bar" style="width:${pct * 1.5}px"></div><span class="pop-count">${top[0]} (${top[1]}/${POOL.length})</span></div>`;
+    }
+  }
+  html += '</div>';
+
+  // Unique picks
+  html += '<div class="stat-item"><div class="stat-label">Unique Picks (Only 1 Person)</div>';
+  if (uniquePicks.length === 0) {
+    html += '<div style="color:#667788;font-size:12px;margin-top:8px">No unique picks!</div>';
   } else {
-    let dhtml = '<table class="standings-table"><thead><tr><th>Owner</th><th>Danger Pick</th><th>Score</th><th>Risk</th></tr></thead><tbody>';
-    for (const d of dangers) {
-      const color = d.isCut ? '#e74c3c' : d.toPar?.startsWith('+') ? '#e67e22' : '#8899aa';
-      dhtml += `<tr>
-        <td style="font-size:12px">${d.owner}</td>
-        <td style="color:${color};font-size:12px">${d.player}${d.isCut ? ' <span class="cut">MC</span>' : ''}</td>
-        <td style="font-family:monospace;font-size:12px">${d.toPar || '—'}</td>
-        <td style="font-size:11px;color:#e67e22">${d.reason}</td>
-      </tr>`;
+    for (const up of uniquePicks.slice(0, 8)) {
+      html += `<div style="font-size:12px;margin-top:3px;color:#a0b0c0"><span style="color:#2ecc71">${up.owner}</span> — ${up.player} (T${up.tier})</div>`;
     }
-    dhtml += '</tbody></table>';
-    dangerEl.innerHTML = dhtml;
+    if (uniquePicks.length > 8) html += `<div style="font-size:11px;color:#556677;margin-top:3px">+${uniquePicks.length - 8} more...</div>`;
   }
+  html += '</div>';
+
+  // Missed cuts tracker
+  html += '<div class="stat-item"><div class="stat-label">Missed Cuts (82 Penalty!)</div>';
+  const mcPlayers = Object.entries(playerScores).filter(([n, d]) => d.isCut);
+  if (mcPlayers.length === 0) {
+    html += '<div style="color:#667788;font-size:12px;margin-top:8px">No missed cuts yet</div>';
+  } else {
+    for (const [name, data] of mcPlayers) {
+      const owners = [];
+      for (const entry of POOL) {
+        for (const pick of entry.picks) {
+          if (findPlayer(pick) === data) owners.push(entry.name.split(' ')[0]);
+        }
+      }
+      html += `<div style="font-size:12px;margin-top:3px"><span style="color:#e74c3c">${name.split(' ').pop()}</span> <span style="color:#667788">— picked by: ${owners.join(', ') || 'nobody'}</span></div>`;
+    }
+  }
+  html += '</div>';
+
+  // Pool rules reminder
+  html += '<div class="stat-item"><div class="stat-label">Pool Rules</div>';
+  html += '<div style="font-size:12px;margin-top:6px;color:#a0b0c0;line-height:1.6">';
+  html += '6 picks (1 per tier)<br>';
+  html += 'Lowest combined strokes wins<br>';
+  html += 'Missed cut = <span style="color:#e74c3c">82 per round</span> (R3 & R4)<br>';
+  html += '1st: $200 | 2nd: $100 | 3rd: $50';
+  html += '</div></div>';
+
+  html += '</div>';
+  el.innerHTML = html;
 }
 
-async function refresh() {
-  await fetchScores();
-  render();
-}
-
+async function refresh() { await fetchScores(); render(); }
 refresh();
 setInterval(refresh, 60000);
 </script>
