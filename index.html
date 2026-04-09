@@ -591,9 +591,9 @@ function findPlayer(name) {
   // Try mapped name
   const mapped = NAME_MAP[name];
   if (mapped && playerScores[mapped]) return playerScores[mapped];
-  // Fuzzy: last name match (strip accents for comparison)
+  // Fuzzy: last name match (strip accents + special chars for comparison)
   const last = name.split(' ').pop().toLowerCase();
-  const strip = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const strip = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ø/g, 'o').replace(/å/g, 'a').replace(/æ/g, 'ae').toLowerCase();
   for (const [k, v] of Object.entries(playerScores)) {
     if (k.includes(last) || strip(k).includes(last)) return v;
   }
