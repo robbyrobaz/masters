@@ -15,9 +15,46 @@
   .header .meta { text-align: right; font-size: 15px; color: #a0d8b8; }
   .header .live-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #e74c3c; animation: pulse 1.5s infinite; margin-right: 6px; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-  .header-video { position: absolute; bottom: 0; left: 0; right: 0; height: 100px; z-index: 1; opacity: 0.5; pointer-events: none; }
-  .header-video video { width: 100%; height: 100%; object-fit: cover; }
-  .header-leader { position: absolute; z-index: 2; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 14px; color: #f4d03f; font-weight: 700; letter-spacing: 2px; text-shadow: 0 1px 6px rgba(0,0,0,0.5); white-space: nowrap; }
+  .header-grass { position: absolute; bottom: 0; left: 0; right: 0; height: 12px; z-index: 1; background: linear-gradient(0deg, #004d35, #00694500); pointer-events: none; }
+  .header-leader { position: absolute; z-index: 3; bottom: 14px; right: 40px; font-size: 13px; color: #f4d03f; font-weight: 700; letter-spacing: 2px; text-shadow: 0 1px 6px rgba(0,0,0,0.5); white-space: nowrap; }
+
+  /* Golf ball animation */
+  .golfball-track { position: absolute; bottom: 0; left: 0; right: 0; height: 80px; z-index: 2; pointer-events: none; overflow: hidden; }
+  .golfball { position: absolute; bottom: 8px; width: 32px; height: 32px; border-radius: 50%; animation: ballBounceX 8s linear infinite, ballBounceY 2.67s ease-in-out infinite; }
+  .golfball-inner { width: 100%; height: 100%; border-radius: 50%; position: relative; background: radial-gradient(circle at 38% 32%, #fff, #e8e8e8 40%, #ccc 80%); box-shadow: inset -2px -2px 5px rgba(0,0,0,0.15), 0 1px 4px rgba(0,0,0,0.3); overflow: hidden; animation: ballSpin 1.5s linear infinite; }
+  .golfball-face { position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; object-fit: cover; object-position: center top; opacity: 0.6; mix-blend-mode: multiply; }
+  .golfball-dimples { position: absolute; inset: 0; border-radius: 50%; background:
+    radial-gradient(circle at 25% 20%, rgba(0,0,0,0.08) 2px, transparent 2px),
+    radial-gradient(circle at 55% 15%, rgba(0,0,0,0.06) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 75% 30%, rgba(0,0,0,0.07) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 40% 45%, rgba(0,0,0,0.06) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 65% 50%, rgba(0,0,0,0.07) 2px, transparent 2px),
+    radial-gradient(circle at 20% 55%, rgba(0,0,0,0.06) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 50% 70%, rgba(0,0,0,0.07) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 30% 75%, rgba(0,0,0,0.06) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 70% 75%, rgba(0,0,0,0.07) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 45% 30%, rgba(0,0,0,0.05) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 80% 60%, rgba(0,0,0,0.06) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 15% 40%, rgba(0,0,0,0.05) 1.5px, transparent 1.5px);
+  }
+  .golfball-shadow { position: absolute; bottom: 3px; width: 24px; height: 6px; border-radius: 50%; background: rgba(0,0,0,0.15); filter: blur(2px); animation: ballBounceX 8s linear infinite, shadowPulse 2.67s ease-in-out infinite; left: 4px; }
+
+  @keyframes ballBounceX {
+    0% { left: -40px; }
+    100% { left: calc(100% + 40px); }
+  }
+  @keyframes ballBounceY {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-45px); }
+  }
+  @keyframes ballSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes shadowPulse {
+    0%, 100% { opacity: 0.8; transform: scaleX(1); }
+    50% { opacity: 0.3; transform: scaleX(1.4); }
+  }
 
   .container { max-width: 1800px; margin: 0 auto; padding: 20px 24px; }
 
@@ -180,8 +217,15 @@
       <div id="last-update" style="margin-top:4px;"></div>
     </div>
   </div>
-  <div class="header-video">
-    <video autoplay loop muted playsinline src="/golf-ball-banner.webm"></video>
+  <div class="header-grass"></div>
+  <div class="golfball-track">
+    <div class="golfball">
+      <div class="golfball-inner">
+        <img class="golfball-face" id="golfball-face" src="" alt="" />
+        <div class="golfball-dimples"></div>
+      </div>
+    </div>
+    <div class="golfball-shadow"></div>
   </div>
   <div class="header-leader" id="header-leader"></div>
 </div>
@@ -592,6 +636,30 @@ async function fetchScores() {
   }
 }
 
+// ESPN player IDs for headshot images
+function getEspnId(name) {
+  const ids = {
+    'Scottie Scheffler': 10404, 'Patrick Reed': 5765, 'Adam Scott': 388,
+    'Corey Conners': 10378, 'Daniel Berger': 10046, 'Ryan Gerard': 15498,
+    'Matt Fitzpatrick': 9279, 'Rory McIlroy': 3702, 'Jon Rahm': 9780,
+    'Bryson DeChambeau': 10046, 'Xander Schauffele': 10404, 'Ludvig Aberg': 15045,
+    'Hideki Matsuyama': 5860, 'Jordan Spieth': 9058, 'Justin Rose': 1114,
+    'Brooks Koepka': 9349, 'Tommy Fleetwood': 9264, 'Sam Burns': 11594,
+    'Collin Morikawa': 11591, 'Cameron Young': 14052, 'Min Woo Lee': 12598,
+    'Justin Thomas': 9526, 'Viktor Hovland': 11596, 'Patrick Cantlay': 9378,
+    'Sungjae Im': 11550, 'Gary Woodland': 4688, 'Ben Griffin': 14918,
+    'Akshay Bhatia': 14668, 'Jake Knapp': 14915, 'Sepp Straka': 10614,
+    'Si Woo Kim': 9466, 'Robert MacIntyre': 11624, 'Chris Gotterup': 14908,
+    'Russell Henley': 6192, 'J.J. Spaun': 10193, 'Shane Lowry': 3995,
+    'Nicolai Hojgaard': 13389, 'Cameron Smith': 9781, 'Wyndham Clark': 11598,
+    'Max Homa': 10240, 'Nick Taylor': 6251, 'Sergio Garcia': 301,
+    'Brian Harman': 6183, 'Aaron Rai': 11227, 'Dustin Johnson': 3448,
+    'Maverick McNealy': 10297, 'Keegan Bradley': 3984, 'Jason Day': 3169,
+    'Marco Penge': 14963, 'Tyrrell Hatton': 9307,
+  };
+  return ids[name] || 0;
+}
+
 // ESPN uses special characters for some names
 const NAME_MAP = {
   'Ludvig Aberg': 'Ludvig Åberg',
@@ -716,9 +784,27 @@ function render() {
   html += '</tbody></table>';
   stEl.innerHTML = html;
 
-  // Update banner leader name
+  // Update banner leader name + golf ball face
   if (standings[0] && standings[0].total > 0) {
     document.getElementById('header-leader').textContent = 'LEADING: ' + standings[0].name.toUpperCase();
+    // Find the leader's best golfer and try to get their ESPN headshot
+    const leaderEntry = POOL.find(p => p.name === standings[0].name);
+    if (leaderEntry) {
+      const bestPick = standings[0].players?.sort((a, b) => (a.total || 999) - (b.total || 999))[0];
+      if (bestPick) {
+        const faceEl = document.getElementById('golfball-face');
+        const espnPlayer = findPlayer(bestPick.name);
+        // Use ESPN athlete images if available via their CDN
+        const lastName = bestPick.name.split(' ').pop().toLowerCase();
+        const headshot = `https://a.espncdn.com/combiner/i?img=/i/headshots/golf/players/full/${getEspnId(bestPick.name)}.png&w=80&h=58`;
+        if (faceEl.dataset.player !== bestPick.name) {
+          faceEl.src = headshot;
+          faceEl.dataset.player = bestPick.name;
+          faceEl.onerror = () => { faceEl.style.display = 'none'; };
+          faceEl.onload = () => { faceEl.style.display = 'block'; };
+        }
+      }
+    }
   }
 
   // Start radar once we have enough history
