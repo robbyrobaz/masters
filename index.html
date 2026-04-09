@@ -156,7 +156,9 @@
   .timeline-dot { position: absolute; top: -4px; width: 12px; height: 12px; border-radius: 50%; background: #2ecc71; border: 2px solid #fff; transition: left 0.3s; box-shadow: 0 0 8px #2ecc7766; }
   .timeline-labels { display: flex; justify-content: space-between; max-width: 600px; margin: 0 auto; }
   .timeline-label { font-size: 11px; color: #556677; font-family: monospace; }
-  .podium-status { text-align: center; margin: 6px 0 4px; font-size: 13px; font-weight: 700; letter-spacing: 2px; }
+  .podium-status { text-align: center; margin: 4px 0 2px; font-size: 12px; font-weight: 700; letter-spacing: 2px; }
+  .podium-timeline { max-width: 400px; margin: 0 auto; }
+  .timeline-labels { max-width: 400px; }
   .podium-status.live { color: #2ecc71; }
   .podium-status.replay { color: #f4d03f; }
   .podium-fade { transition: opacity 0.4s, transform 0.4s; }
@@ -221,6 +223,17 @@
         <div class="podium-score" id="p3-score">—</div>
         <div class="podium-gap" id="p3-gap"></div>
       </div>
+      <!-- Timeline inside podium -->
+      <div style="width:100%;order:10;margin-top:8px;">
+        <div class="podium-status" id="podium-mode">LIVE</div>
+        <div class="podium-timeline">
+          <div class="timeline-track" id="timeline-track">
+            <div class="timeline-fill" id="timeline-fill" style="width:100%"></div>
+            <div class="timeline-dot" id="timeline-dot" style="left:calc(100% - 6px)"></div>
+          </div>
+        </div>
+        <div class="timeline-labels" id="timeline-labels"></div>
+      </div>
     </div>
 
     <div class="side-stats" id="right-stats">
@@ -242,15 +255,6 @@
     </div>
   </div>
 
-  <!-- Podium Timeline -->
-  <div class="podium-status" id="podium-mode">LIVE</div>
-  <div class="podium-timeline">
-    <div class="timeline-track" id="timeline-track">
-      <div class="timeline-fill" id="timeline-fill" style="width:100%"></div>
-      <div class="timeline-dot" id="timeline-dot" style="left:calc(100% - 6px)"></div>
-    </div>
-  </div>
-  <div class="timeline-labels" id="timeline-labels"></div>
   </div><!-- end podium-wrap -->
 
   <div class="card">
