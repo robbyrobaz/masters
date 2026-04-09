@@ -15,14 +15,14 @@
   .header .meta { text-align: right; font-size: 15px; color: #a0d8b8; }
   .header .live-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #e74c3c; animation: pulse 1.5s infinite; margin-right: 6px; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-  .header-grass { position: absolute; bottom: 0; left: 0; right: 0; height: 12px; z-index: 1; background: linear-gradient(0deg, #004d35, #00694500); pointer-events: none; }
+  .header-grass { position: absolute; bottom: 0; left: 0; right: 0; height: 18px; z-index: 1; pointer-events: none; background: linear-gradient(0deg, #1a6b1a 0%, #228b22 40%, #2d9e2d 70%, transparent 100%); border-top: 2px solid #33aa33; }
   .header-leader { position: absolute; z-index: 3; bottom: 14px; right: 40px; font-size: 13px; color: #f4d03f; font-weight: 700; letter-spacing: 2px; text-shadow: 0 1px 6px rgba(0,0,0,0.5); white-space: nowrap; }
 
   /* Golf ball animation */
-  .golfball-track { position: absolute; bottom: 0; left: 0; right: 0; height: 80px; z-index: 2; pointer-events: none; overflow: hidden; }
-  .golfball { position: absolute; bottom: 8px; width: 32px; height: 32px; border-radius: 50%; animation: ballBounceX 16s linear infinite, ballBounceY 5.33s ease-in-out infinite; }
-  .golfball-inner { width: 100%; height: 100%; border-radius: 50%; position: relative; background: radial-gradient(circle at 38% 32%, #fff, #e8e8e8 40%, #ccc 80%); box-shadow: inset -2px -2px 5px rgba(0,0,0,0.15), 0 1px 4px rgba(0,0,0,0.3); overflow: hidden; animation: ballSpin 12s linear infinite; }
-  .golfball-face { position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; object-fit: cover; object-position: center top; opacity: 0.6; mix-blend-mode: multiply; }
+  .golfball-track { position: absolute; bottom: 0; left: 0; right: 0; height: 100%; z-index: 2; pointer-events: none; overflow: hidden; }
+  .golfball { position: absolute; bottom: 16px; width: 46px; height: 46px; border-radius: 50%; animation: ballBounceX 16s linear infinite, ballBounceY 4s cubic-bezier(0.2,0,0.8,1) infinite; }
+  .golfball-inner { width: 100%; height: 100%; border-radius: 50%; position: relative; background: radial-gradient(circle at 38% 32%, #fff, #e8e8e8 40%, #ccc 80%); box-shadow: inset -3px -3px 6px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.3); overflow: hidden; animation: ballSpin 12s linear infinite; }
+  .golfball-face { position: absolute; top: 4px; left: 4px; width: 38px; height: 38px; border-radius: 50%; object-fit: cover; object-position: center top; opacity: 0.6; mix-blend-mode: multiply; }
   .golfball-dimples { position: absolute; inset: 0; border-radius: 50%; background:
     radial-gradient(circle at 25% 20%, rgba(0,0,0,0.08) 2px, transparent 2px),
     radial-gradient(circle at 55% 15%, rgba(0,0,0,0.06) 1.5px, transparent 1.5px),
@@ -37,23 +37,36 @@
     radial-gradient(circle at 80% 60%, rgba(0,0,0,0.06) 1.5px, transparent 1.5px),
     radial-gradient(circle at 15% 40%, rgba(0,0,0,0.05) 1.5px, transparent 1.5px);
   }
-  .golfball-shadow { position: absolute; bottom: 3px; width: 24px; height: 6px; border-radius: 50%; background: rgba(0,0,0,0.15); filter: blur(2px); animation: ballBounceX 16s linear infinite, shadowPulse 5.33s ease-in-out infinite; left: 4px; }
+  .golfball-shadow { position: absolute; bottom: 10px; width: 30px; height: 8px; border-radius: 50%; background: rgba(0,0,0,0.2); filter: blur(3px); animation: ballBounceX 16s linear infinite, shadowPulse 4s cubic-bezier(0.2,0,0.8,1) infinite; left: 8px; }
 
   @keyframes ballBounceX {
-    0% { left: -40px; }
-    100% { left: calc(100% + 40px); }
+    0% { left: -50px; }
+    100% { left: calc(100% + 50px); }
   }
   @keyframes ballBounceY {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-45px); }
+    /* Drop from top, hit bottom, bounce up, repeat */
+    0% { transform: translateY(-80px); }
+    40% { transform: translateY(0px); }
+    55% { transform: translateY(-35px); }
+    70% { transform: translateY(0px); }
+    80% { transform: translateY(-14px); }
+    90% { transform: translateY(0px); }
+    95% { transform: translateY(-4px); }
+    100% { transform: translateY(0px); }
   }
   @keyframes ballSpin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
   @keyframes shadowPulse {
-    0%, 100% { opacity: 0.8; transform: scaleX(1); }
-    50% { opacity: 0.3; transform: scaleX(1.4); }
+    0% { opacity: 0; transform: scaleX(0.5); }
+    40% { opacity: 0.8; transform: scaleX(1); }
+    55% { opacity: 0.4; transform: scaleX(1.3); }
+    70% { opacity: 0.8; transform: scaleX(1); }
+    80% { opacity: 0.5; transform: scaleX(1.2); }
+    90% { opacity: 0.8; transform: scaleX(1); }
+    95% { opacity: 0.6; transform: scaleX(1.1); }
+    100% { opacity: 0.8; transform: scaleX(1); }
   }
 
   .container { max-width: 1800px; margin: 0 auto; padding: 20px 24px; }
