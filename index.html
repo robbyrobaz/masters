@@ -954,13 +954,21 @@ function showPodiumState(snap, isLive) {
       }
     }
 
+    // Update labels based on live vs replay
+    const labels = document.querySelectorAll('.podium-label');
     if (isLive) {
       mode.textContent = 'LIVE';
       mode.className = 'podium-status live';
+      if (labels[0]) labels[0].textContent = 'Currently 2nd \u2014 $100';
+      if (labels[1]) labels[1].textContent = 'Current Leader \u2014 $200';
+      if (labels[2]) labels[2].textContent = 'Currently 3rd \u2014 $50';
     } else {
       const time = new Date(snap.time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-      mode.textContent = 'REPLAY — ' + time;
+      mode.textContent = 'REPLAY \u2014 ' + time;
       mode.className = 'podium-status replay';
+      if (labels[0]) labels[0].textContent = '2nd at ' + time + ' \u2014 $100';
+      if (labels[1]) labels[1].textContent = 'Leader at ' + time + ' \u2014 $200';
+      if (labels[2]) labels[2].textContent = '3rd at ' + time + ' \u2014 $50';
     }
 
     // Fade in
