@@ -979,11 +979,21 @@ function startRadarLoop() {
   if (podiumHistory.length < 2) return;
 
   radarIdx = 0;
+  // Show first frame immediately
+  showPodiumState(podiumHistory[0], false);
+  updateTimeline();
+
   radarTimer = setInterval(() => {
     if (radarPaused) return;
 
-    if (radarIdx === -1) {
-      // We're at live — pause for 5 seconds then restart
+    // Advance to next frame
+    radarIdx++;
+
+    if (radarIdx >= podiumHistory.length) {
+      // Reached the end — show live state and pause
+      radarIdx = -1;
+      showPodiumState(podiumHistory[podiumHistory.length - 1], true);
+      updateTimeline();
       radarPaused = true;
       setTimeout(() => {
         radarPaused = false;
@@ -996,15 +1006,7 @@ function startRadarLoop() {
 
     showPodiumState(podiumHistory[radarIdx], false);
     updateTimeline();
-
-    radarIdx++;
-    if (radarIdx >= podiumHistory.length) {
-      // Show live state
-      radarIdx = -1;
-      showPodiumState(podiumHistory[podiumHistory.length - 1], true);
-      updateTimeline();
-    }
-  }, 2000); // 2 seconds per frame
+  }, 2000);
 }
 
 function initRadar() {
