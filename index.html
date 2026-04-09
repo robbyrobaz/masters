@@ -147,6 +147,34 @@
   .model-chip { background: #0e1a2e; border: 1px solid #1e3050; border-radius: 8px; padding: 10px; text-align: center; font-size: 13px; }
   .model-chip .family { font-size: 11px; color: #006747; text-transform: uppercase; }
   .model-chip .name { font-weight: 600; margin-top: 2px; }
+
+  /* Podium History Animation */
+  .history-card { position: relative; overflow: hidden; }
+  .history-timeline { position: relative; padding: 10px 0; }
+  .history-row { display: flex; align-items: center; gap: 12px; padding: 8px 14px; border-radius: 8px; margin: 4px 0; transition: all 0.5s ease; opacity: 0; animation: slideIn 0.4s forwards; }
+  .history-row.latest { background: #1a3525; border: 1px solid #2ecc7744; }
+  .history-row:not(.latest) { opacity: 0.5; }
+  @keyframes slideIn { from { transform: translateX(-30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  .history-row:not(.latest) { animation: slideIn 0.4s forwards; animation-fill-mode: forwards; }
+  .h-time { font-size: 12px; color: #667788; font-family: monospace; min-width: 65px; }
+  .h-medal { font-size: 16px; min-width: 24px; text-align: center; }
+  .h-name { font-size: 14px; font-weight: 600; flex: 1; }
+  .h-score { font-size: 14px; font-family: 'SF Mono',monospace; font-weight: 700; min-width: 50px; text-align: right; }
+  .h-change { font-size: 12px; min-width: 70px; text-align: right; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .h-change.up { background: #1a3525; color: #2ecc71; }
+  .h-change.down { background: #3d1515; color: #e74c3c; }
+  .h-change.same { background: #1e3050; color: #667788; }
+  .h-divider { border: none; border-top: 1px solid #1e3050; margin: 6px 0; }
+
+  /* Scrolling background behind podium */
+  .podium-bg { position: relative; }
+  .podium-bg::before {
+    content: ''; position: absolute; inset: -20px; z-index: 0; opacity: 0.06;
+    background: repeating-linear-gradient(45deg, #006747 0px, #006747 2px, transparent 2px, transparent 30px);
+    animation: bgScroll 60s linear infinite;
+  }
+  @keyframes bgScroll { from { transform: translateX(0); } to { transform: translateX(42px); } }
+  .podium { position: relative; z-index: 1; }
 </style>
 </head>
 <body>
@@ -166,6 +194,7 @@
   </div>
 
   <div id="tab-live" class="tab-content active">
+  <div class="podium-bg">
   <div class="top-row">
     <div class="side-stats" id="left-stats">
       <div class="mini-stat">
@@ -225,6 +254,15 @@
       </div>
     </div>
   </div>
+
+  <!-- Podium History -->
+  <div class="card history-card" style="margin-top:16px;">
+    <h2>Podium Movement</h2>
+    <div class="history-timeline" id="podium-history">
+      <div style="color:#667788;font-size:14px;text-align:center;padding:16px">Tracking changes — history builds as scores update</div>
+    </div>
+  </div>
+  </div><!-- end podium-bg -->
 
   <div class="card">
     <div class="find-me">
@@ -653,6 +691,10 @@ function render() {
   html += '</tbody></table>';
   stEl.innerHTML = html;
 
+  // Track podium changes
+  trackPodium(standings);
+  renderPodiumHistory();
+
   // Top stats
   renderTopStats(standings);
 
@@ -857,6 +899,83 @@ function renderStats(standings) {
   html += '</div>';
 
   html += '</div>';
+  el.innerHTML = html;
+}
+
+// ── Podium History Tracker ──
+const podiumHistory = JSON.parse(localStorage.getItem('masters-podium-history') || '[]');
+const MAX_HISTORY = 30;
+
+function trackPodium(standings) {
+  if (!standings[0] || standings[0].total === 0) return;
+  const top3 = standings.slice(0, 3).map(s => ({ name: s.name, total: s.total }));
+  const last = podiumHistory[podiumHistory.length - 1];
+
+  // Only record if podium changed
+  if (last) {
+    const same = last.top3.every((p, i) => p.name === top3[i]?.name && p.total === top3[i]?.total);
+    if (same) return;
+  }
+
+  podiumHistory.push({ time: Date.now(), top3 });
+  if (podiumHistory.length > MAX_HISTORY) podiumHistory.shift();
+  localStorage.setItem('masters-podium-history', JSON.stringify(podiumHistory));
+}
+
+function renderPodiumHistory() {
+  const el = document.getElementById('podium-history');
+  if (podiumHistory.length === 0) return;
+
+  let html = '';
+  // Show newest first
+  const items = [...podiumHistory].reverse();
+
+  items.forEach((snap, idx) => {
+    const isLatest = idx === 0;
+    const prev = items[idx + 1]; // previous snapshot (next in reversed array)
+    const time = new Date(snap.time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    const medals = ['#f4d03f', '#c0c0c0', '#cd7f32'];
+    const medalIcons = ['1st', '2nd', '3rd'];
+
+    if (idx > 0) html += '<hr class="h-divider">';
+
+    snap.top3.forEach((p, i) => {
+      // Detect movement
+      let change = '';
+      let changeCls = 'same';
+      if (prev) {
+        const prevIdx = prev.top3.findIndex(pp => pp.name === p.name);
+        if (prevIdx === -1) {
+          change = 'NEW';
+          changeCls = 'up';
+        } else if (prevIdx > i) {
+          change = 'UP ' + (prevIdx - i);
+          changeCls = 'up';
+        } else if (prevIdx < i) {
+          change = 'DOWN ' + (i - prevIdx);
+          changeCls = 'down';
+        } else {
+          // Same position — check score change
+          const scoreDiff = p.total - prev.top3[prevIdx].total;
+          if (scoreDiff !== 0) {
+            change = (scoreDiff > 0 ? '+' : '') + scoreDiff;
+            changeCls = scoreDiff < 0 ? 'up' : 'down';
+          }
+        }
+      }
+
+      const delay = idx * 0.15 + i * 0.05;
+      html += '<div class="history-row' + (isLatest ? ' latest' : '') + '" style="animation-delay:' + delay + 's">';
+      html += '<span class="h-time">' + (i === 0 ? time : '') + '</span>';
+      html += '<span class="h-medal" style="color:' + medals[i] + '">' + medalIcons[i] + '</span>';
+      html += '<span class="h-name" style="color:' + (isLatest ? '#fff' : '#8899aa') + '">' + p.name + '</span>';
+      html += '<span class="h-score" style="color:' + (isLatest ? '#2ecc71' : '#667788') + '">' + p.total + '</span>';
+      if (change) html += '<span class="h-change ' + changeCls + '">' + change + '</span>';
+      else html += '<span class="h-change same">—</span>';
+      html += '</div>';
+    });
+  });
+
   el.innerHTML = html;
 }
 
