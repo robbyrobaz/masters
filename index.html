@@ -8,12 +8,16 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0a1628; color: #e0e7ef; min-height: 100vh; font-size: 15px; }
 
-  .header { background: linear-gradient(135deg, #006747 0%, #004d35 100%); padding: 24px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3); flex-wrap: wrap; gap: 12px; }
+  .header { background: linear-gradient(135deg, #006747 0%, #004d35 100%); padding: 0; box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: relative; overflow: hidden; min-height: 100px; }
+  .header-content { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; padding: 24px 40px; flex-wrap: wrap; gap: 12px; }
   .header h1 { font-size: 28px; color: #fff; }
   .header h1 .icon { color: #f4d03f; }
   .header .meta { text-align: right; font-size: 15px; color: #a0d8b8; }
   .header .live-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #e74c3c; animation: pulse 1.5s infinite; margin-right: 6px; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .header-video { position: absolute; bottom: 0; left: 0; right: 0; height: 100px; z-index: 1; opacity: 0.5; pointer-events: none; }
+  .header-video video { width: 100%; height: 100%; object-fit: cover; }
+  .header-leader { position: absolute; z-index: 2; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 14px; color: #f4d03f; font-weight: 700; letter-spacing: 2px; text-shadow: 0 1px 6px rgba(0,0,0,0.5); white-space: nowrap; }
 
   .container { max-width: 1800px; margin: 0 auto; padding: 20px 24px; }
 
@@ -169,11 +173,17 @@
 <body>
 
 <div class="header">
-  <h1><span class="icon">⛳</span> Adeptia Masters Pool 2026</h1>
-  <div class="meta">
-    <div><span class="live-dot"></span> <span id="live-status">Connecting...</span></div>
-    <div id="last-update" style="margin-top:4px;"></div>
+  <div class="header-content">
+    <h1><span class="icon">⛳</span> Adeptia Masters Pool 2026</h1>
+    <div class="meta">
+      <div><span class="live-dot"></span> <span id="live-status">Connecting...</span></div>
+      <div id="last-update" style="margin-top:4px;"></div>
+    </div>
   </div>
+  <div class="header-video">
+    <video autoplay loop muted playsinline src="/golf-ball-banner.webm"></video>
+  </div>
+  <div class="header-leader" id="header-leader"></div>
 </div>
 
 <div class="container">
@@ -705,6 +715,11 @@ function render() {
   });
   html += '</tbody></table>';
   stEl.innerHTML = html;
+
+  // Update banner leader name
+  if (standings[0] && standings[0].total > 0) {
+    document.getElementById('header-leader').textContent = 'LEADING: ' + standings[0].name.toUpperCase();
+  }
 
   // Start radar once we have enough history
   if (!radarTimer) initRadar();
