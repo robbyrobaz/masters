@@ -19,6 +19,7 @@ async function saveHistory(history) {
   await put(BLOB_KEY, JSON.stringify(history), {
     access: 'public',
     addRandomSuffix: false,
+    allowOverwrite: true,
   });
 }
 
