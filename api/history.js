@@ -1,16 +1,10 @@
-// Vercel serverless function — stores/retrieves podium history from Blob
-import { put, list } from '@vercel/blob';
-
-const BLOB_KEY = 'podium-history.json';
-const MAX_HISTORY = 100;
+// Vercel serverless function — stores/retrieves podium history from jsonblob.com (free, no signup)
+const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/019d7782-4c71-7537-a8b5-a28bf57b5013';
 
 async function getHistory() {
   try {
-    const { blobs } = await list({ prefix: BLOB_KEY });
-    if (blobs.length === 0) return [];
-    // Add cache-buster to avoid CDN returning stale data
-    const url = blobs[0].url + '?t=' + Date.now();
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetch(BLOB_URL, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) return [];
     return await res.json();
   } catch {
     return [];
@@ -18,10 +12,10 @@ async function getHistory() {
 }
 
 async function saveHistory(history) {
-  await put(BLOB_KEY, JSON.stringify(history), {
-    access: 'public',
-    addRandomSuffix: false,
-    allowOverwrite: true,
+  await fetch(BLOB_URL, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(history),
   });
 }
 
@@ -29,6 +23,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Cache-Control', 'no-cache');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -47,11 +42,10 @@ export default async function handler(req, res) {
       const history = await getHistory();
       const last = history[history.length - 1];
 
-      // Only save if podium ORDER changed (names different)
+      // Only save if podium ORDER changed
       if (last) {
         const sameOrder = last.top3.every((p, i) => p.name === top3[i]?.name);
         if (sameOrder) {
-          // Update scores on latest entry silently
           last.top3 = top3;
           last.time = Date.now();
           await saveHistory(history);
@@ -59,9 +53,8 @@ export default async function handler(req, res) {
         }
       }
 
-      // New podium arrangement — save snapshot
       history.push({ time: Date.now(), top3 });
-      if (history.length > MAX_HISTORY) history.shift();
+      if (history.length > 100) history.shift();
       await saveHistory(history);
 
       return res.status(200).json({ saved: true, count: history.length });
