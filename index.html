@@ -82,8 +82,8 @@
   .container { max-width: 1800px; margin: 0 auto; padding: 20px 24px; }
 
   /* Podium */
-  .podium { display: flex; justify-content: center; align-items: flex-end; gap: 16px; margin: 24px 0; flex-wrap: wrap; }
-  .podium-spot { text-align: center; border-radius: 14px; padding: 20px 28px; min-width: 220px; }
+  .podium { display: flex; justify-content: center; align-items: flex-end; gap: 10px; margin: 24px 0; flex-wrap: nowrap; }
+  .podium-spot { text-align: center; border-radius: 14px; padding: 14px 16px; min-width: 150px; flex: 1; }
   .podium-spot.first { background: linear-gradient(135deg, #4a3600, #2a2000); border: 2px solid #f4d03f; order: 2; padding-bottom: 28px; }
   .podium-spot.second { background: linear-gradient(135deg, #2a2a30, #1a1a20); border: 2px solid #c0c0c0; order: 1; }
   .podium-spot.third { background: linear-gradient(135deg, #2a1a10, #1a1008); border: 2px solid #cd7f32; order: 3; }
@@ -91,8 +91,8 @@
   .podium-spot.first .podium-label { color: #f4d03f; }
   .podium-spot.second .podium-label { color: #c0c0c0; }
   .podium-spot.third .podium-label { color: #cd7f32; }
-  .podium-name { font-size: 20px; font-weight: 700; color: #fff; }
-  .podium-score { font-size: 34px; font-weight: 800; font-family: 'SF Mono',monospace; margin: 6px 0; }
+  .podium-name { font-size: 17px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .podium-score { font-size: 28px; font-weight: 800; font-family: 'SF Mono',monospace; margin: 4px 0; }
   .podium-spot.first .podium-score { color: #f4d03f; }
   .podium-spot.second .podium-score { color: #c0c0c0; }
   .podium-spot.third .podium-score { color: #cd7f32; }
@@ -167,7 +167,7 @@
   .loading { text-align: center; padding: 40px; color: #556677; font-size: 18px; }
 
   /* Top Stats Row */
-  .top-row { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 16px; margin: 20px 0; align-items: start; }
+  .top-row { display: grid; grid-template-columns: 1fr 3fr 1fr; gap: 12px; margin: 20px 0; align-items: start; }
   @media (max-width: 1100px) { .top-row { grid-template-columns: 1fr; } .podium { order: -1; } }
   .side-stats { display: flex; flex-direction: column; gap: 10px; }
   .mini-stat { background: #0e1a2e; border-radius: 10px; padding: 14px 18px; border: 1px solid #1e3050; }
