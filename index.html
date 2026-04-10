@@ -1278,12 +1278,19 @@ async function loadRaceHistory() {
       const server = await res.json();
       if (server.length > 0) {
         raceHistory = server;
-        localStorage.setItem('masters-race-history', JSON.stringify(raceHistory));
-        return;
       }
     }
   } catch {}
-  // Fall back to localStorage (already loaded above)
+  // Filter out snapshots where most entries are zero (bad data)
+  const clean = raceHistory.filter(snap => {
+    const withScores = snap.entries?.filter(e => e.total > 0).length || 0;
+    return withScores >= 10;
+  });
+  if (clean.length !== raceHistory.length) {
+    raceHistory.length = 0;
+    raceHistory.push(...clean);
+  }
+  localStorage.setItem('masters-race-history', JSON.stringify(raceHistory));
 }
 const ROW_H = 27;
 const RACE_COLORS = ['#f4d03f','#c0c0c0','#cd7f32','#2ecc71','#2ecc71','#3498db','#3498db','#3498db','#3498db','#3498db',
@@ -1291,7 +1298,11 @@ const RACE_COLORS = ['#f4d03f','#c0c0c0','#cd7f32','#2ecc71','#2ecc71','#3498db'
   '#95a5a6','#95a5a6','#95a5a6','#95a5a6','#95a5a6','#95a5a6','#95a5a6'];
 
 function trackRace(standings) {
+  // Skip if leader has zero score (no data yet)
   if (!standings[0] || standings[0].total === 0) return;
+  // Skip if most entries have zero (data still loading)
+  const withScores = standings.filter(s => s.total > 0).length;
+  if (withScores < 10) return;
   const snap = {
     time: Date.now(),
     entries: standings.map(s => ({ name: s.name, total: s.total })),
