@@ -39,13 +39,18 @@ export default async function handler(req, res) {
       const history = await getHistory();
       const last = history[history.length - 1];
 
-      // Only save hourly snapshots (>55 min since last)
-      if (last && (Date.now() - last.time) < 55 * 60 * 1000) {
-        // Update latest scores silently
-        last.entries = entries;
-        last.time = Date.now();
-        await saveHistory(history);
-        return res.status(200).json({ saved: false, reason: 'updated latest', count: history.length });
+      // Under 20 snapshots: save every top-5 change. Over 20: hourly.
+      const minInterval = history.length >= 20 ? 55 * 60 * 1000 : 30 * 1000;
+
+      if (last && (Date.now() - last.time) < minInterval) {
+        const top5changed = history.length < 20 &&
+          !last.entries.slice(0, 5).every((p, i) => p.name === entries[i]?.name);
+        if (!top5changed) {
+          last.entries = entries;
+          last.time = Date.now();
+          await saveHistory(history);
+          return res.status(200).json({ saved: false, reason: 'updated latest', count: history.length });
+        }
       }
 
       history.push({ time: Date.now(), entries });

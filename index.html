@@ -1298,15 +1298,22 @@ function trackRace(standings) {
   };
 
   const last = raceHistory[raceHistory.length - 1];
-  // Only keep hourly snapshots (save if >55 min since last, or first one)
-  if (last && (Date.now() - last.time) < 55 * 60 * 1000) {
-    // Update the latest snapshot's scores (keeps "live" current)
-    last.entries = snap.entries;
-    last.time = snap.time;
+  // When under 20 snapshots: save every rank change. Over 20: hourly only.
+  const minInterval = raceHistory.length >= 20 ? 55 * 60 * 1000 : 30 * 1000; // 30s vs 55min
+
+  if (last && (Date.now() - last.time) < minInterval) {
+    // Check if top 5 order changed — if so, save even if interval not met (under 20 mode)
+    const top5changed = raceHistory.length < 20 && !last.entries.slice(0, 5).every((p, i) => p.name === snap.entries[i]?.name);
+    if (!top5changed) {
+      last.entries = snap.entries;
+      last.time = snap.time;
+    } else {
+      raceHistory.push(snap);
+    }
   } else {
     raceHistory.push(snap);
-    if (raceHistory.length > 50) raceHistory.shift();
   }
+  if (raceHistory.length > 50) raceHistory.shift();
   localStorage.setItem('masters-race-history', JSON.stringify(raceHistory));
 
   // Sync to server (non-blocking)
