@@ -166,6 +166,27 @@
   .refresh-note { text-align: center; margin-top: 24px; font-size: 13px; color: #334455; padding-bottom: 24px; }
   .loading { text-align: center; padding: 40px; color: #556677; font-size: 18px; }
 
+  /* Bar Chart Race */
+  .race-card { position: relative; overflow: hidden; }
+  .race-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .race-time { font-size: 22px; font-weight: 800; font-family: 'SF Mono',monospace; color: #f4d03f; }
+  .race-status { font-size: 12px; font-weight: 700; letter-spacing: 2px; padding: 3px 12px; border-radius: 10px; }
+  .race-status.live { background: #1a3525; color: #2ecc71; }
+  .race-status.replay { background: #332b15; color: #f4d03f; }
+  .race-container { position: relative; }
+  .race-bar-row { display: flex; align-items: center; position: absolute; left: 0; right: 0; height: 26px; transition: top 1.5s ease-in-out, opacity 0.5s; }
+  .race-rank { width: 28px; font-size: 13px; font-weight: 700; color: #667788; text-align: right; margin-right: 8px; flex-shrink: 0; }
+  .race-rank.r1 { color: #f4d03f; }
+  .race-rank.r2 { color: #c0c0c0; }
+  .race-rank.r3 { color: #cd7f32; }
+  .race-name { width: 80px; font-size: 13px; font-weight: 600; text-align: right; margin-right: 10px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .race-bar { height: 20px; border-radius: 4px; transition: width 1.5s ease-in-out, background 1s; min-width: 4px; position: relative; }
+  .race-bar-label { position: absolute; right: 6px; top: 2px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.9); font-family: monospace; }
+  .race-timeline { margin-top: 8px; display: flex; align-items: center; gap: 0; }
+  .race-track { flex: 1; height: 3px; background: #1e3050; border-radius: 2px; position: relative; }
+  .race-track-fill { height: 100%; background: #006747; border-radius: 2px; transition: width 0.5s; }
+  .race-track-dot { position: absolute; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: #2ecc71; border: 2px solid #fff; transition: left 0.5s; }
+
   /* Top Stats Row */
   .top-row { display: grid; grid-template-columns: 1fr 3fr 1fr; gap: 12px; margin: 20px 0; align-items: start; }
   @media (max-width: 1100px) { .top-row { grid-template-columns: 1fr; } .podium { order: -1; } }
@@ -281,37 +302,38 @@
       </div>
     </div>
 
-    <div class="podium podium-fade" id="podium">
-      <div class="podium-spot second">
-        <div class="podium-label">Currently 2nd — $100</div>
-        <div class="podium-name" id="p2-name">—</div>
-        <div class="podium-score" id="p2-score">—</div>
-        <div class="podium-gap" id="p2-gap"></div>
-      </div>
-      <div class="podium-spot first">
-        <div class="podium-label">Current Leader — $200</div>
-        <div class="podium-name" id="p1-name">—</div>
-        <div class="podium-score" id="p1-score">—</div>
-        <div class="podium-gap" id="p1-gap">Leader</div>
-      </div>
-      <div class="podium-spot third">
-        <div class="podium-label">Currently 3rd — $50</div>
-        <div class="podium-name" id="p3-name">—</div>
-        <div class="podium-score" id="p3-score">—</div>
-        <div class="podium-gap" id="p3-gap"></div>
-      </div>
-    </div>
-    <!-- Timeline below podium -->
-    <div style="margin-top:6px;">
-      <div class="podium-status" id="podium-mode">LIVE</div>
-      <div class="podium-timeline">
-        <div class="timeline-track" id="timeline-track">
-          <div class="timeline-fill" id="timeline-fill" style="width:100%"></div>
-          <div class="timeline-dot" id="timeline-dot" style="left:calc(100% - 6px)"></div>
+    <div><!-- podium + timeline wrapper (single grid cell) -->
+      <div class="podium podium-fade" id="podium">
+        <div class="podium-spot second">
+          <div class="podium-label">Currently 2nd — $100</div>
+          <div class="podium-name" id="p2-name">—</div>
+          <div class="podium-score" id="p2-score">—</div>
+          <div class="podium-gap" id="p2-gap"></div>
+        </div>
+        <div class="podium-spot first">
+          <div class="podium-label">Current Leader — $200</div>
+          <div class="podium-name" id="p1-name">—</div>
+          <div class="podium-score" id="p1-score">—</div>
+          <div class="podium-gap" id="p1-gap">Leader</div>
+        </div>
+        <div class="podium-spot third">
+          <div class="podium-label">Currently 3rd — $50</div>
+          <div class="podium-name" id="p3-name">—</div>
+          <div class="podium-score" id="p3-score">—</div>
+          <div class="podium-gap" id="p3-gap"></div>
         </div>
       </div>
-      <div class="timeline-labels" id="timeline-labels"></div>
-    </div>
+      <div style="margin-top:6px;">
+        <div class="podium-status" id="podium-mode">LIVE</div>
+        <div class="podium-timeline">
+          <div class="timeline-track" id="timeline-track">
+            <div class="timeline-fill" id="timeline-fill" style="width:100%"></div>
+            <div class="timeline-dot" id="timeline-dot" style="left:calc(100% - 6px)"></div>
+          </div>
+        </div>
+        <div class="timeline-labels" id="timeline-labels"></div>
+      </div>
+    </div><!-- end podium + timeline wrapper -->
 
     <div class="side-stats" id="right-stats">
       <div class="mini-stat">
@@ -342,6 +364,17 @@
     </div>
     <div class="my-lineup" id="my-lineup">
       <div class="my-lineup-grid" id="my-players"></div>
+    </div>
+  </div>
+
+  <div class="full-width card race-card">
+    <div class="race-header">
+      <h2 style="margin:0">Pool Rankings Over Time</h2>
+      <div><span class="race-status live" id="race-mode">LIVE</span> <span class="race-time" id="race-time"></span></div>
+    </div>
+    <div class="race-container" id="race-container" style="height:730px;"></div>
+    <div class="race-timeline">
+      <div class="race-track"><div class="race-track-fill" id="race-fill" style="width:100%"></div><div class="race-track-dot" id="race-dot" style="left:calc(100% - 5px)"></div></div>
     </div>
   </div>
 
@@ -835,6 +868,9 @@ function render() {
   // Start radar once we have enough history
   if (!radarTimer) initRadar();
 
+  // Bar chart race
+  updateRaceLive(standings);
+
   // Top stats
   renderTopStats(standings);
 
@@ -1229,6 +1265,143 @@ function initRadar() {
   updateTimeline();
 }
 
+// ── Bar Chart Race ──
+const raceHistory = JSON.parse(localStorage.getItem('masters-race-history') || '[]');
+let raceTimer = null;
+let raceIdx = -1;
+let racePaused = false;
+const ROW_H = 27;
+const RACE_COLORS = ['#f4d03f','#c0c0c0','#cd7f32','#2ecc71','#2ecc71','#3498db','#3498db','#3498db','#3498db','#3498db',
+  '#8e44ad','#8e44ad','#8e44ad','#8e44ad','#8e44ad','#7f8c8d','#7f8c8d','#7f8c8d','#7f8c8d','#7f8c8d',
+  '#95a5a6','#95a5a6','#95a5a6','#95a5a6','#95a5a6','#95a5a6','#95a5a6'];
+
+function trackRace(standings) {
+  if (!standings[0] || standings[0].total === 0) return;
+  const snap = {
+    time: Date.now(),
+    entries: standings.map(s => ({ name: s.name, total: s.total })),
+  };
+
+  const last = raceHistory[raceHistory.length - 1];
+  // Only keep hourly snapshots (save if >55 min since last, or first one)
+  if (last && (Date.now() - last.time) < 55 * 60 * 1000) {
+    // Update the latest snapshot's scores (keeps "live" current)
+    last.entries = snap.entries;
+    last.time = snap.time;
+  } else {
+    raceHistory.push(snap);
+    if (raceHistory.length > 50) raceHistory.shift();
+  }
+  localStorage.setItem('masters-race-history', JSON.stringify(raceHistory));
+}
+
+function initRaceBars() {
+  const container = document.getElementById('race-container');
+  if (container.children.length > 0) return; // already built
+
+  for (let i = 0; i < POOL.length; i++) {
+    const row = document.createElement('div');
+    row.className = 'race-bar-row';
+    row.dataset.name = POOL[i].name;
+    row.style.top = (i * ROW_H) + 'px';
+    row.innerHTML = '<span class="race-rank">' + (i + 1) + '</span>' +
+      '<span class="race-name">' + POOL[i].name.split(' ')[0] + '</span>' +
+      '<div class="race-bar" style="width:10px;background:#333"><span class="race-bar-label"></span></div>';
+    container.appendChild(row);
+  }
+}
+
+function renderRaceFrame(snap, isLive) {
+  const container = document.getElementById('race-container');
+  const modeEl = document.getElementById('race-mode');
+  const timeEl = document.getElementById('race-time');
+  const fillEl = document.getElementById('race-fill');
+  const dotEl = document.getElementById('race-dot');
+
+  if (!snap || !snap.entries) return;
+  initRaceBars();
+
+  // Sort entries by total (ascending = winning)
+  const sorted = [...snap.entries].sort((a, b) => a.total - b.total);
+  const maxTotal = sorted[sorted.length - 1]?.total || 1;
+  const minTotal = sorted[0]?.total || 0;
+  const range = Math.max(maxTotal - minTotal, 1);
+
+  // Update each bar's position and width
+  sorted.forEach((entry, rank) => {
+    const row = container.querySelector(`[data-name="${entry.name}"]`);
+    if (!row) return;
+
+    row.style.top = (rank * ROW_H) + 'px';
+    const rankEl = row.querySelector('.race-rank');
+    rankEl.textContent = rank + 1;
+    rankEl.className = 'race-rank' + (rank === 0 ? ' r1' : rank === 1 ? ' r2' : rank === 2 ? ' r3' : '');
+
+    const nameEl = row.querySelector('.race-name');
+    const isMe = entry.name === selectedName;
+    nameEl.style.color = isMe ? '#2ecc71' : rank < 3 ? '#fff' : '#8899aa';
+
+    const bar = row.querySelector('.race-bar');
+    // Wider bar = better (lower score). Invert the scale.
+    const pct = Math.max(5, 100 - ((entry.total - minTotal) / range * 80));
+    bar.style.width = pct + '%';
+    bar.style.background = isMe ? '#2ecc71' : RACE_COLORS[rank] || '#555';
+
+    const label = bar.querySelector('.race-bar-label');
+    label.textContent = entry.total;
+  });
+
+  if (isLive) {
+    modeEl.textContent = 'LIVE';
+    modeEl.className = 'race-status live';
+    timeEl.textContent = '';
+  } else {
+    const t = new Date(snap.time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    modeEl.textContent = 'REPLAY';
+    modeEl.className = 'race-status replay';
+    timeEl.textContent = t;
+  }
+
+  // Timeline
+  const total = raceHistory.length;
+  const idx = isLive ? total - 1 : raceHistory.indexOf(snap);
+  const pct = total > 1 ? (idx / (total - 1)) * 100 : 100;
+  fillEl.style.width = pct + '%';
+  dotEl.style.left = 'calc(' + pct + '% - 5px)';
+}
+
+function startRaceLoop() {
+  if (raceTimer || raceHistory.length < 2) return;
+  raceIdx = 0;
+  renderRaceFrame(raceHistory[0], false);
+
+  raceTimer = setInterval(() => {
+    if (racePaused) return;
+    raceIdx++;
+    if (raceIdx >= raceHistory.length) {
+      raceIdx = -1;
+      renderRaceFrame(raceHistory[raceHistory.length - 1], true);
+      racePaused = true;
+      setTimeout(() => {
+        racePaused = false;
+        raceIdx = 0;
+        renderRaceFrame(raceHistory[0], false);
+      }, 5000);
+      return;
+    }
+    renderRaceFrame(raceHistory[raceIdx], false);
+  }, 3000);
+}
+
+function updateRaceLive(standings) {
+  if (raceHistory.length < 2 && standings[0]?.total > 0) {
+    // Not enough history to animate — just show live
+    const snap = { time: Date.now(), entries: standings.map(s => ({ name: s.name, total: s.total })) };
+    renderRaceFrame(snap, true);
+  }
+  if (!raceTimer && raceHistory.length >= 2) startRaceLoop();
+}
+
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -1240,6 +1413,7 @@ async function refresh() {
   await fetchScores();
   const standings = calcStandings();
   await trackPodium(standings);
+  trackRace(standings);
   render();
 }
 
