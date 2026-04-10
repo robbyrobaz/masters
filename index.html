@@ -810,21 +810,23 @@ function render() {
   // Update banner leader name + golf ball face
   if (standings[0] && standings[0].total > 0) {
     document.getElementById('header-leader').textContent = 'LEADING: ' + standings[0].name.toUpperCase();
-    // Find the leader's best golfer and try to get their ESPN headshot
+    // Find the leader's best-scoring golfer with a valid ESPN ID
     const leaderEntry = POOL.find(p => p.name === standings[0].name);
     if (leaderEntry) {
-      const bestPick = standings[0].players?.sort((a, b) => (a.total || 999) - (b.total || 999))[0];
-      if (bestPick) {
+      // Try to find the best-performing golfer, fall back to first pick with an ESPN ID
+      const playersWithScores = (standings[0].players || []).filter(p => p.total > 0);
+      const bestPick = playersWithScores.length > 0
+        ? playersWithScores.sort((a, b) => a.total - b.total)[0]
+        : { name: leaderEntry.picks[0] };
+      const espnId = getEspnId(bestPick.name);
+      if (espnId > 0) {
         const faceEl = document.getElementById('golfball-face');
-        const espnPlayer = findPlayer(bestPick.name);
-        // Use ESPN athlete images if available via their CDN
-        const lastName = bestPick.name.split(' ').pop().toLowerCase();
-        const headshot = `https://a.espncdn.com/combiner/i?img=/i/headshots/golf/players/full/${getEspnId(bestPick.name)}.png&w=80&h=58`;
+        const headshot = `https://a.espncdn.com/combiner/i?img=/i/headshots/golf/players/full/${espnId}.png&w=80&h=58`;
         if (faceEl.dataset.player !== bestPick.name) {
           faceEl.src = headshot;
           faceEl.dataset.player = bestPick.name;
+          faceEl.style.display = 'block';
           faceEl.onerror = () => { faceEl.style.display = 'none'; };
-          faceEl.onload = () => { faceEl.style.display = 'block'; };
         }
       }
     }
@@ -1064,39 +1066,56 @@ let radarTimer = null;
 let radarPaused = false;
 
 async function loadHistory() {
+  // Try server first, fall back to localStorage
   try {
     const res = await fetch('/api/history');
-    if (res.ok) podiumHistory = await res.json();
+    if (res.ok) {
+      const serverHistory = await res.json();
+      if (serverHistory.length > 0) {
+        podiumHistory.length = 0;
+        podiumHistory.push(...serverHistory);
+        saveHistoryLocal();
+        return;
+      }
+    }
   } catch {}
+  // Fall back to localStorage
+  const local = JSON.parse(localStorage.getItem('masters-podium-history') || '[]');
+  if (local.length > 0) {
+    podiumHistory.length = 0;
+    podiumHistory.push(...local);
+  }
+}
+
+function saveHistoryLocal() {
+  localStorage.setItem('masters-podium-history', JSON.stringify(podiumHistory));
 }
 
 async function trackPodium(standings) {
   if (!standings[0] || standings[0].total === 0) return;
   const top3 = standings.slice(0, 3).map(s => ({ name: s.name, total: s.total }));
+  const last = podiumHistory[podiumHistory.length - 1];
 
-  try {
-    const res = await fetch('/api/history', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ top3 }),
-    });
-    const data = await res.json();
-    // Reload full history after save
-    if (data.saved) await loadHistory();
-    else {
-      // Scores updated on latest — update local copy
-      const last = podiumHistory[podiumHistory.length - 1];
-      if (last) { last.top3 = top3; last.time = Date.now(); }
-    }
-  } catch {
-    // Fallback: update local only
-    const last = podiumHistory[podiumHistory.length - 1];
-    if (last && last.top3.every((p, i) => p.name === top3[i]?.name)) {
-      last.top3 = top3; last.time = Date.now();
-    } else {
-      podiumHistory.push({ time: Date.now(), top3 });
-    }
+  // Check if podium order changed
+  if (last && last.top3.every((p, i) => p.name === top3[i]?.name)) {
+    // Same order — just update scores
+    last.top3 = top3;
+    last.time = Date.now();
+  } else {
+    // New podium arrangement
+    podiumHistory.push({ time: Date.now(), top3 });
+    if (podiumHistory.length > 60) podiumHistory.shift();
   }
+
+  // Save locally always
+  saveHistoryLocal();
+
+  // Try server too (non-blocking)
+  fetch('/api/history', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ top3 }),
+  }).catch(() => {});
 }
 
 function showPodiumState(snap, isLive) {
