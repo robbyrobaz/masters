@@ -1381,12 +1381,17 @@ function renderRaceFrame(snap, isLive) {
     const nameEl = row.querySelector('.race-name');
     const isMe = entry.name === selectedName;
     nameEl.style.color = isMe ? '#2ecc71' : rank < 3 ? '#fff' : '#8899aa';
+    nameEl.style.fontWeight = isMe ? '800' : '600';
+    nameEl.style.fontSize = isMe ? '13px' : '11px';
+    nameEl.style.textShadow = isMe ? '0 0 8px #2ecc71' : 'none';
 
     const bar = row.querySelector('.race-bar');
-    // Wider bar = better (lower score). Invert the scale.
     const pct = Math.max(5, 100 - ((entry.total - minTotal) / range * 80));
     bar.style.width = pct + '%';
     bar.style.background = isMe ? '#2ecc71' : RACE_COLORS[rank] || '#555';
+    bar.style.boxShadow = isMe ? '0 0 10px #2ecc71, 0 0 20px #2ecc7155' : 'none';
+    bar.style.height = isMe ? '13px' : '11px';
+    row.style.zIndex = isMe ? '10' : '1';
 
     const label = bar.querySelector('.race-bar-label');
     label.textContent = entry.total;
