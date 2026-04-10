@@ -174,14 +174,14 @@
   .race-status.live { background: #1a3525; color: #2ecc71; }
   .race-status.replay { background: #332b15; color: #f4d03f; }
   .race-container { position: relative; }
-  .race-bar-row { display: flex; align-items: center; position: absolute; left: 0; right: 0; height: 26px; transition: top 1.5s ease-in-out, opacity 0.5s; }
-  .race-rank { width: 28px; font-size: 13px; font-weight: 700; color: #667788; text-align: right; margin-right: 8px; flex-shrink: 0; }
+  .race-bar-row { display: flex; align-items: center; position: absolute; left: 0; right: 0; height: 14px; transition: top 1.5s ease-in-out, opacity 0.5s; }
+  .race-rank { width: 22px; font-size: 10px; font-weight: 700; color: #667788; text-align: right; margin-right: 5px; flex-shrink: 0; }
   .race-rank.r1 { color: #f4d03f; }
   .race-rank.r2 { color: #c0c0c0; }
   .race-rank.r3 { color: #cd7f32; }
-  .race-name { width: 80px; font-size: 13px; font-weight: 600; text-align: right; margin-right: 10px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .race-bar { height: 20px; border-radius: 4px; transition: width 1.5s ease-in-out, background 1s; min-width: 4px; position: relative; }
-  .race-bar-label { position: absolute; right: 6px; top: 2px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.9); font-family: monospace; }
+  .race-name { width: 65px; font-size: 11px; font-weight: 600; text-align: right; margin-right: 6px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .race-bar { height: 11px; border-radius: 3px; transition: width 1.5s ease-in-out, background 1s; min-width: 4px; position: relative; }
+  .race-bar-label { position: absolute; right: 4px; top: 0px; font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.9); font-family: monospace; line-height: 11px; }
   .race-timeline { margin-top: 8px; display: flex; align-items: center; gap: 0; }
   .race-track { flex: 1; height: 3px; background: #1e3050; border-radius: 2px; position: relative; }
   .race-track-fill { height: 100%; background: #006747; border-radius: 2px; transition: width 0.5s; }
@@ -372,7 +372,7 @@
       <h2 style="margin:0">Pool Rankings Over Time</h2>
       <div><span class="race-status live" id="race-mode">LIVE</span> <span class="race-time" id="race-time"></span></div>
     </div>
-    <div class="race-container" id="race-container" style="height:730px;"></div>
+    <div class="race-container" id="race-container" style="height:385px;"></div>
     <div class="race-timeline">
       <div class="race-track"><div class="race-track-fill" id="race-fill" style="width:100%"></div><div class="race-track-dot" id="race-dot" style="left:calc(100% - 5px)"></div></div>
     </div>
@@ -1292,7 +1292,7 @@ async function loadRaceHistory() {
   }
   localStorage.setItem('masters-race-history', JSON.stringify(raceHistory));
 }
-const ROW_H = 27;
+const ROW_H = 14;
 const RACE_COLORS = ['#f4d03f','#c0c0c0','#cd7f32','#2ecc71','#2ecc71','#3498db','#3498db','#3498db','#3498db','#3498db',
   '#8e44ad','#8e44ad','#8e44ad','#8e44ad','#8e44ad','#7f8c8d','#7f8c8d','#7f8c8d','#7f8c8d','#7f8c8d',
   '#95a5a6','#95a5a6','#95a5a6','#95a5a6','#95a5a6','#95a5a6','#95a5a6'];
