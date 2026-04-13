@@ -616,6 +616,7 @@ const SIM_DATA = {
 
 const MC_PENALTY = 82;
 let playerScores = {};
+let isTournamentFinal = false;
 let selectedName = localStorage.getItem('masters-me') || '';
 
 const sel = document.getElementById('me-select');
@@ -680,8 +681,19 @@ async function fetchScores() {
       const thru = c.thru || (playedRounds.length > 0 ? 'F' : '');
       playerScores[c.name] = { total, toPar, thru, position: c.position, isCut, rounds };
     }
-    const isFinal = data.competitors?.[0]?.status === 'Final' || !data.events || data.events?.[0]?.status?.type?.state === 'post';
-    document.getElementById('live-status').textContent = (isFinal ? 'FINAL — ' : 'LIVE — ') + (data.eventName || 'Masters 2026');
+    isTournamentFinal = !!(data.competitors?.[0]?.status === 'Final' || data.events?.[0]?.status?.type?.state === 'post');
+    // When tournament is final, mark all MC players as finished and fix thru
+    if (isTournamentFinal) {
+      for (const [name, ps] of Object.entries(playerScores)) {
+        if (ps.isCut) ps.thru = 'F';
+        if (!ps.thru && ps.total > 0) ps.thru = 'F';
+      }
+    }
+    document.getElementById('live-status').textContent = (isTournamentFinal ? 'FINAL — ' : 'LIVE — ') + (data.eventName || 'Masters 2026');
+    // Stop the pulsing dot when final
+    const liveDot = document.querySelector('.live-dot');
+    if (liveDot) liveDot.style.animation = isTournamentFinal ? 'none' : '';
+    if (liveDot) liveDot.style.background = isTournamentFinal ? '#2ecc71' : '#e74c3c';
     document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
   } catch (err) {
     document.getElementById('live-status').textContent = 'Retrying...';
@@ -772,9 +784,16 @@ function render() {
       document.getElementById(`p${i+1}-name`).textContent = s.name;
       document.getElementById(`p${i+1}-score`).textContent = s.total || '—';
       const gapVal = s.total - leaderTotal;
-      const gap = i === 0 ? 'Leader' : !leaderTotal ? '' : gapVal === 0 ? 'Tied' : `+${gapVal} strokes`;
+      const gap = i === 0 ? (isTournamentFinal ? 'Winner' : 'Leader') : !leaderTotal ? '' : gapVal === 0 ? 'Tied' : `+${gapVal} strokes`;
       document.getElementById(`p${i+1}-gap`).textContent = gap;
     }
+  }
+  // Update podium labels for final state
+  const podiumLabels = document.querySelectorAll('.podium-label');
+  if (isTournamentFinal && podiumLabels.length >= 3) {
+    podiumLabels[0].textContent = '2nd Place — $100';
+    podiumLabels[1].textContent = 'Winner — $200';
+    podiumLabels[2].textContent = '3rd Place — $50';
   }
 
   // My lineup
@@ -882,6 +901,15 @@ function render() {
 
   // Analytics
   renderStats(standings);
+
+  // Update refresh notes and race mode for final state
+  if (isTournamentFinal) {
+    document.querySelectorAll('.refresh-note').forEach(el => {
+      el.textContent = 'Final Results | Scores via ESPN | Prizes: 1st $200 | 2nd $100 | 3rd $50';
+    });
+    const raceMode = document.getElementById('race-mode');
+    if (raceMode) { raceMode.textContent = 'FINAL'; raceMode.className = 'race-status live'; }
+  }
 }
 
 function renderTopStats(standings) {
@@ -945,13 +973,23 @@ function renderTopStats(standings) {
   }
   const roundPct = roundHolesTotal > 0 ? Math.round(roundHolesComplete / roundHolesTotal * 100) : 0;
 
-  document.getElementById('stat-progress').textContent = progressPct + '%';
-  document.getElementById('stat-progress-bar').style.width = progressPct + '%';
-  document.getElementById('stat-round').textContent = roundLabel + ': ' + roundPct + '% complete | Overall: ' + completedHoles + ' of ' + totalPoolHoles + ' holes';
+  // When tournament is final, force 100%
+  const finalPct = isTournamentFinal ? 100 : progressPct;
+  document.getElementById('stat-progress').textContent = finalPct + '%';
+  document.getElementById('stat-progress-bar').style.width = finalPct + '%';
+  if (isTournamentFinal) {
+    document.getElementById('stat-round').textContent = 'Tournament Complete — All 4 rounds final';
+  } else {
+    document.getElementById('stat-round').textContent = roundLabel + ': ' + roundPct + '% complete | Overall: ' + completedHoles + ' of ' + totalPoolHoles + ' holes';
+  }
 
-  document.getElementById('stat-reporting').textContent = reportingGolfers.size + ' / ' + allPoolGolfers.size;
-  const stillPlaying = reportingGolfers.size - finishedGolfers.size;
-  document.getElementById('stat-reporting-detail').textContent = finishedGolfers.size + ' finished, ' + (stillPlaying > 0 ? stillPlaying + ' still playing' : 'all done');
+  document.getElementById('stat-reporting').textContent = isTournamentFinal ? allPoolGolfers.size + ' / ' + allPoolGolfers.size : reportingGolfers.size + ' / ' + allPoolGolfers.size;
+  if (isTournamentFinal) {
+    document.getElementById('stat-reporting-detail').textContent = 'Tournament finished';
+  } else {
+    const stillPlaying = reportingGolfers.size - finishedGolfers.size;
+    document.getElementById('stat-reporting-detail').textContent = finishedGolfers.size + ' finished, ' + (stillPlaying > 0 ? stillPlaying + ' still playing' : 'all done');
+  }
 
   // Best golfer
   if (sortedGolfers.length > 0) {
@@ -1180,7 +1218,13 @@ function showPodiumState(snap, isLive) {
 
     // Update labels based on live vs replay
     const labels = document.querySelectorAll('.podium-label');
-    if (isLive) {
+    if (isLive && isTournamentFinal) {
+      mode.textContent = 'FINAL';
+      mode.className = 'podium-status live';
+      if (labels[0]) labels[0].textContent = '2nd Place \u2014 $100';
+      if (labels[1]) labels[1].textContent = 'Winner \u2014 $200';
+      if (labels[2]) labels[2].textContent = '3rd Place \u2014 $50';
+    } else if (isLive) {
       mode.textContent = 'LIVE';
       mode.className = 'podium-status live';
       if (labels[0]) labels[0].textContent = 'Currently 2nd \u2014 $100';
@@ -1223,7 +1267,8 @@ function updateTimeline() {
   const first = new Date(podiumHistory[0].time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   const last = new Date(podiumHistory[total - 1].time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   const changes = total + ' changes';
-  labels.innerHTML = '<span class="timeline-label">' + first + '</span><span class="timeline-label" style="color:#2ecc71">' + changes + '</span><span class="timeline-label">' + last + ' (LIVE)</span>';
+  const liveLabel = isTournamentFinal ? ' (FINAL)' : ' (LIVE)';
+  labels.innerHTML = '<span class="timeline-label">' + first + '</span><span class="timeline-label" style="color:#2ecc71">' + changes + '</span><span class="timeline-label">' + last + liveLabel + '</span>';
 }
 
 function startRadarLoop() {
