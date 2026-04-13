@@ -34,8 +34,13 @@ export default async function handler(req, res) {
       competitors.push({ name, roundScores, toPar, thru, position, isCut, status });
     }
 
+    const eventState = event.status?.type?.state || '';
+    const eventStatus = event.status?.type?.description || '';
+
     res.status(200).json({
       eventName: event.name,
+      eventState,
+      eventStatus,
       competitors,
       timestamp: new Date().toISOString(),
     });

@@ -681,7 +681,7 @@ async function fetchScores() {
       const thru = c.thru || (playedRounds.length > 0 ? 'F' : '');
       playerScores[c.name] = { total, toPar, thru, position: c.position, isCut, rounds };
     }
-    isTournamentFinal = !!(data.competitors?.[0]?.status === 'Final' || data.events?.[0]?.status?.type?.state === 'post');
+    isTournamentFinal = !!(data.eventState === 'post' || data.eventStatus === 'Final' || data.events?.[0]?.status?.type?.state === 'post');
     // When tournament is final, mark all MC players as finished and fix thru
     if (isTournamentFinal) {
       for (const [name, ps] of Object.entries(playerScores)) {
