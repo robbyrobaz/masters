@@ -24,7 +24,12 @@ export default async function handler(req, res) {
       const toPar = comp.statistics?.find(s => s.name === 'scoreToPar')?.displayValue || '';
       const position = comp.status?.position?.displayName || '';
       const thru = comp.status?.thru?.toString() || '';
-      const isCut = status === 'cut' || comp.status?.type?.id === '3';
+      // Detect MC: ESPN status field is unreliable — also check if player has <4 scoring rounds when event is final
+      const playedRounds = roundScores.filter(r => r > 0);
+      const eventDone = event.status?.type?.state === 'post' || event.status?.type?.description === 'Final';
+      const isCut = status === 'cut' || comp.status?.type?.id === '3'
+        || (eventDone && playedRounds.length > 0 && playedRounds.length < 4)
+        || (!eventDone && playedRounds.length >= 2 && roundScores.length >= 3 && roundScores[2] === 0);
 
       competitors.push({ name, roundScores, toPar, thru, position, isCut, status });
     }

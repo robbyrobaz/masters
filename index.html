@@ -651,7 +651,12 @@ async function fetchScores() {
         const toPar = comp.statistics?.find(s => s.name === 'scoreToPar')?.displayValue || '';
         const position = comp.status?.position?.displayName || '';
         const thru = comp.status?.thru?.toString() || '';
-        const isCut = comp.status?.type?.description === 'cut' || comp.status?.type?.id === '3';
+        // Detect MC: ESPN status field unreliable — also check round count
+        const eventDone = event?.status?.type?.state === 'post' || event?.status?.type?.description === 'Final';
+        const played = roundScores.filter(r => r > 0);
+        const isCut = comp.status?.type?.description === 'cut' || comp.status?.type?.id === '3'
+          || (eventDone && played.length > 0 && played.length < 4)
+          || (!eventDone && played.length >= 2 && roundScores.length >= 3 && roundScores[2] === 0);
         competitors.push({ name, roundScores, toPar, thru, position, isCut });
       }
       data.eventName = event?.name;
@@ -660,32 +665,23 @@ async function fetchScores() {
     for (const c of competitors) {
       const rounds = c.roundScores || [];
       const playedRounds = rounds.filter(r => r > 0);
-      let total = rounds.reduce((s, r) => s + r, 0) || 0;
-      if (c.isCut) { total += (4 - playedRounds.length) * MC_PENALTY; }
-      // Use ESPN toPar if available; otherwise calculate from strokes
-      let toPar = c.toPar;
-      if ((!toPar || toPar === '') && total > 0) {
-        const isFinished = c.thru === 'F' || c.thru === '18';
-        const thruNum = parseInt(c.thru) || 0;
-        if (isFinished && playedRounds.length > 0) {
-          // Completed round(s) — calculate to-par from full rounds
-          const parTotal = playedRounds.length * 72;
-          const diff = total - parTotal;
-          toPar = diff === 0 ? 'E' : diff > 0 ? '+' + diff : '' + diff;
-        } else if (thruNum > 0) {
-          // Mid-round with known holes — estimate to-par (par ~4 per hole)
-          const estimatedPar = (playedRounds.length > 1 ? (playedRounds.length - 1) * 72 : 0) + thruNum * 4;
-          const diff = total - estimatedPar;
-          toPar = (diff === 0 ? 'E' : diff > 0 ? '+' + diff : '' + diff) + '*';
-        } else if (playedRounds.length > 0) {
-          toPar = total.toString();
-        }
+      // Detect MC even if API didn't flag it: <4 scoring rounds means missed cut
+      const isCut = c.isCut || (playedRounds.length > 0 && playedRounds.length < 4);
+      let total = playedRounds.reduce((s, r) => s + r, 0) || 0;
+      const mcRounds = isCut ? (4 - playedRounds.length) : 0;
+      if (mcRounds > 0) { total += mcRounds * MC_PENALTY; }
+      // Calculate effective to-par including MC penalty rounds
+      let toPar = '';
+      if (total > 0) {
+        const parTotal = (playedRounds.length + mcRounds) * 72;
+        const diff = total - parTotal;
+        toPar = diff === 0 ? 'E' : diff > 0 ? '+' + diff : '' + diff;
       }
-      // Calculate position from thru field or infer
       const thru = c.thru || (playedRounds.length > 0 ? 'F' : '');
-      playerScores[c.name] = { total, toPar, thru, position: c.position, isCut: c.isCut, rounds };
+      playerScores[c.name] = { total, toPar, thru, position: c.position, isCut, rounds };
     }
-    document.getElementById('live-status').textContent = 'LIVE — ' + (data.eventName || 'Masters 2026');
+    const isFinal = data.competitors?.[0]?.status === 'Final' || !data.events || data.events?.[0]?.status?.type?.state === 'post';
+    document.getElementById('live-status').textContent = (isFinal ? 'FINAL — ' : 'LIVE — ') + (data.eventName || 'Masters 2026');
     document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
   } catch (err) {
     document.getElementById('live-status').textContent = 'Retrying...';
